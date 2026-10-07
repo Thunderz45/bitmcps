@@ -1,0 +1,622 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>BITM CPS - Official MBA CV Builder</title>
+  <link rel="stylesheet" href="style.css">
+  <script src="html2pdf.bundle.min.js"></script>
+</head>
+<body>
+
+  <!-- Top Navigation Header -->
+  <header class="app-header">
+    <div class="brand">
+      <div class="brand-icon">🎓</div>
+      <div>
+        <div class="brand-title">BITM CPS CV Builder</div>
+        <div class="brand-subtitle">Balaji Institute of Technology & Management • Sri Balaji University, Pune</div>
+      </div>
+    </div>
+
+    <div class="header-actions">
+      <button type="button" class="btn btn-secondary" id="btnInstructions">
+        📘 CV Instructions
+      </button>
+
+      <button type="button" class="btn btn-ai" id="btnAiCopilot">
+        ✨ AI Copilot
+      </button>
+
+      <button type="button" class="btn btn-secondary" id="btnResetSample">
+        🔄 Reset Sample CV
+      </button>
+
+      <button type="button" class="btn btn-secondary" id="btnSaveDraft">
+        💾 Save Draft
+      </button>
+
+      <!-- Direct PDF Download & Print Buttons -->
+      <button type="button" class="btn btn-primary" id="btnDownloadPdf" style="background:#0e3860; border-color:#0e3860;">
+        📥 Download PDF
+      </button>
+
+      <button type="button" class="btn btn-secondary" id="btnPrintPdf">
+        🖨️ Print (A4)
+      </button>
+    </div>
+  </header>
+
+  <!-- Split Screen Workspace -->
+  <main class="workspace">
+    
+    <!-- LEFT PANEL: Editor Input Form -->
+    <section class="editor-panel">
+      
+      <div class="panel-header">
+        <h2>1. Edit CV Content</h2>
+        <span style="font-size: 0.75rem; color: #64748b;">Instant live synchronization with preview</span>
+      </div>
+
+      <!-- AI Copilot Quick Banner -->
+      <div class="ai-copilot-card">
+        <h3>✨ AI Resume Copilot (OpenRouter)</h3>
+        <p>Auto-enhance bullet points, apply STAR method, and format to BITM placement rules.</p>
+        <button type="button" class="btn btn-secondary btn-sm" id="btnAiQuickFill" style="background:#fff; color:#0e3860; font-weight:700;">
+          ⚡ Auto-Enhance Bullets with AI
+        </button>
+      </div>
+
+      <!-- Card 1: Personal Information -->
+      <div class="form-card">
+        <div class="card-header" onclick="toggleCard(this)">
+          <div class="card-title">👤 1. Personal Information</div>
+          <span>▼</span>
+        </div>
+        <div class="card-body">
+          <div class="form-row">
+            <div class="form-group">
+              <label>Full Name (14pt Bold in CV)</label>
+              <input type="text" id="inpName" value="Bhushan Padghan" placeholder="Student Name">
+            </div>
+            <div class="form-group">
+              <label>MBA Specialization</label>
+              <input type="text" id="inpSpec" value="Data Science & Business Analytics" placeholder="e.g. Data Science & Business Analytics">
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label>Permanent Address</label>
+            <input type="text" id="inpAddress" value="Gajanan Nagar Ward No 17, Chikhli, Buldhana 443201" placeholder="Address">
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label>Date of Birth (DOB)</label>
+              <input type="text" id="inpDob" value="29-04-2005" placeholder="DD-MM-YYYY">
+            </div>
+            <div class="form-group">
+              <label>Age</label>
+              <input type="text" id="inpAge" value="21" placeholder="e.g. 21">
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label>Mobile Number</label>
+              <input type="text" id="inpPhone" value="+918459738053" placeholder="+91...">
+            </div>
+            <div class="form-group">
+              <label>Email Address</label>
+              <input type="email" id="inpEmail" value="bhushanpadghan87@gmail.com" placeholder="email@...">
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label>Formal Photograph (White Background)</label>
+            <input type="file" id="inpPhoto" accept="image/*">
+            <span style="font-size: 0.7rem; color: #64748b;">Upload a passport-size photo with white background.</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Card 2: Languages Known -->
+      <div class="form-card">
+        <div class="card-header" onclick="toggleCard(this)">
+          <div class="card-title">🗣️ 2. Languages Known</div>
+          <span>▼</span>
+        </div>
+        <div class="card-body">
+          <div id="languagesContainer" style="display: flex; flex-direction: column; gap: 0.5rem;">
+            <!-- Generated via JS -->
+          </div>
+          <button type="button" class="btn btn-secondary btn-sm" id="btnAddLanguage" style="align-self: flex-start;">
+            + Add Language
+          </button>
+        </div>
+      </div>
+
+      <!-- Card 3: Academic Details -->
+      <div class="form-card">
+        <div class="card-header" onclick="toggleCard(this)">
+          <div class="card-title">🎓 3. Academic Details</div>
+          <span>▼</span>
+        </div>
+        <div class="card-body">
+          <div id="academicsContainer" style="display: flex; flex-direction: column; gap: 0.75rem;">
+            <!-- Generated via JS -->
+          </div>
+          <button type="button" class="btn btn-secondary btn-sm" id="btnAddAcademic" style="align-self: flex-start;">
+            + Add Qualification
+          </button>
+        </div>
+      </div>
+
+      <!-- Card 4: Summer Internship -->
+      <div class="form-card">
+        <div class="card-header" onclick="toggleCard(this)">
+          <div class="card-title">💼 4. Summer Internship</div>
+          <span>▼</span>
+        </div>
+        <div class="card-body">
+          <div class="form-row">
+            <div class="form-group">
+              <label>Company Name</label>
+              <input type="text" id="inpInternCompany" value="C3aLabs India Pvt Ltd" placeholder="Company Name">
+            </div>
+            <div class="form-group">
+              <label>Period / Date (Aligned on Right)</label>
+              <input type="text" id="inpInternPeriod" value="(Mar 2026)" placeholder="(e.g. Mar 2026)">
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label>Designation / Role</label>
+            <input type="text" id="inpInternRole" value="HR & Marketing Intern Using AI and Automation" placeholder="Internship Role">
+          </div>
+
+          <div class="form-group">
+            <label>Key Responsibilities & Deliverables (Bullet points)</label>
+            <div id="internBulletsContainer" style="display: flex; flex-direction: column; gap: 0.4rem;">
+              <!-- Generated via JS -->
+            </div>
+            <button type="button" class="btn btn-secondary btn-sm" id="btnAddInternBullet" style="align-self: flex-start; margin-top: 0.4rem;">
+              + Add Bullet Point
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Card 5: Key Projects -->
+      <div class="form-card">
+        <div class="card-header" onclick="toggleCard(this)">
+          <div class="card-title">🚀 5. Key Projects</div>
+          <span>▼</span>
+        </div>
+        <div class="card-body">
+          <h4 style="font-size: 0.82rem; color: #0e3860; border-bottom: 1px solid #e2e8f0; padding-bottom: 3px;">
+            Research Projects
+          </h4>
+          <div id="researchProjectsContainer" style="display: flex; flex-direction: column; gap: 0.5rem;">
+            <!-- Generated via JS -->
+          </div>
+          <button type="button" class="btn btn-secondary btn-sm" id="btnAddResearchProj" style="align-self: flex-start;">
+            + Add Research Project
+          </button>
+
+          <h4 style="font-size: 0.82rem; color: #0e3860; border-bottom: 1px solid #e2e8f0; padding-bottom: 3px; margin-top: 0.75rem;">
+            Other Projects
+          </h4>
+          <div id="otherProjectsContainer" style="display: flex; flex-direction: column; gap: 0.5rem;">
+            <!-- Generated via JS -->
+          </div>
+          <button type="button" class="btn btn-secondary btn-sm" id="btnAddOtherProj" style="align-self: flex-start;">
+            + Add Other Project
+          </button>
+        </div>
+      </div>
+
+      <!-- Card 6: Certifications -->
+      <div class="form-card">
+        <div class="card-header" onclick="toggleCard(this)">
+          <div class="card-title">📜 6. Certifications</div>
+          <span>▼</span>
+        </div>
+        <div class="card-body">
+          <div id="certificationsContainer" style="display: flex; flex-direction: column; gap: 0.5rem;">
+            <!-- Generated via JS -->
+          </div>
+          <button type="button" class="btn btn-secondary btn-sm" id="btnAddCert" style="align-self: flex-start;">
+            + Add Certification
+          </button>
+        </div>
+      </div>
+
+      <!-- Card 7: Positions of Responsibility & Achievements -->
+      <div class="form-card">
+        <div class="card-header" onclick="toggleCard(this)">
+          <div class="card-title">🏆 7. Position of Responsibility & Achievements</div>
+          <span>▼</span>
+        </div>
+        <div class="card-body">
+          <div id="responsibilitiesContainer" style="display: flex; flex-direction: column; gap: 0.4rem;">
+            <!-- Generated via JS -->
+          </div>
+          <button type="button" class="btn btn-secondary btn-sm" id="btnAddResp" style="align-self: flex-start;">
+            + Add Responsibility / Achievement
+          </button>
+        </div>
+      </div>
+
+      <!-- Card 8: Extra-Curricular Activities -->
+      <div class="form-card">
+        <div class="card-header" onclick="toggleCard(this)">
+          <div class="card-title">⚽ 8. Extra-Curricular Activities</div>
+          <span>▼</span>
+        </div>
+        <div class="card-body">
+          <div id="extraCurricularContainer" style="display: flex; flex-direction: column; gap: 0.4rem;">
+            <!-- Generated via JS -->
+          </div>
+          <button type="button" class="btn btn-secondary btn-sm" id="btnAddExtra" style="align-self: flex-start;">
+            + Add Activity
+          </button>
+        </div>
+      </div>
+
+      <!-- Card 9: Hobbies & Interests -->
+      <div class="form-card">
+        <div class="card-header" onclick="toggleCard(this)">
+          <div class="card-title">🎨 9. Hobbies & Interests</div>
+          <span>▼</span>
+        </div>
+        <div class="card-body">
+          <div id="hobbiesContainer" style="display: flex; flex-direction: column; gap: 0.4rem;">
+            <!-- Generated via JS -->
+          </div>
+          <button type="button" class="btn btn-secondary btn-sm" id="btnAddHobby" style="align-self: flex-start;">
+            + Add Hobby
+          </button>
+        </div>
+      </div>
+
+      <!-- Card 10: Signatures & Verification -->
+      <div class="form-card">
+        <div class="card-header" onclick="toggleCard(this)">
+          <div class="card-title">✍️ 10. Signatures & Place</div>
+          <span>▼</span>
+        </div>
+        <div class="card-body">
+          <div class="form-row">
+            <div class="form-group">
+              <label>Place</label>
+              <input type="text" id="inpPlace" value="PUNE" placeholder="PUNE">
+            </div>
+            <div class="form-group">
+              <label>Date (Optional)</label>
+              <input type="text" id="inpDate" placeholder="DD-MM-YYYY">
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </section>
+
+    <!-- RIGHT PANEL: Live Preview Panel -->
+    <section class="preview-panel">
+      
+      <div class="panel-header">
+        <h2>2. Official Format Live Preview</h2>
+        <span style="font-size: 0.75rem; color: #64748b;">Exact forensic match to b cv u (1).pdf</span>
+      </div>
+
+      <div class="preview-container" id="cvExportContainer">
+        
+        <!-- ==========================================
+             PAGE 1 (Official BITM CV Paper)
+             ========================================== -->
+        <div class="cv-page" id="cvPage1">
+          <div class="cv-page-frame">
+            
+            <!-- Official BITM Header Letterhead Image -->
+            <img src="bitm_header.jpg" class="cv-header-img" alt="Balaji Institute of Technology & Management">
+
+            <!-- 1. PERSONAL INFORMATION (Exact 5-Col Grid from Word XML) -->
+            <table class="cv-table">
+              <tr>
+                <th colspan="5" class="banner-cell">PERSONAL INFORMATION</th>
+              </tr>
+              <tr>
+                <td class="font-bold text-center" style="width: 12.57%;">Name</td>
+                <td colspan="3" style="width: 67.95%;">
+                  <span class="font-bold text-14pt" id="prevName">Bhushan Padghan</span>
+                  <span class="font-bold" style="margin-left: 20px;">MBA - <span id="prevSpec">Data Science & Business Analytics</span></span>
+                </td>
+                <td rowspan="4" class="cell-photo" style="width: 19.48%;">
+                  <div class="photo-frame" id="prevPhotoSlot">
+                    <img src="sample_photo.jpg" alt="Student Photo">
+                  </div>
+                </td>
+              </tr>
+              <tr>
+                <td class="font-bold text-center" style="line-height: 1.15;">Permanent<br>address</td>
+                <td colspan="3" id="prevAddress">Gajanan Nagar Ward No 17, Chikhli, Buldhana 443201</td>
+              </tr>
+              <tr>
+                <td class="text-center">DOB</td>
+                <td style="width: 20.04%;" id="prevDob">29-04-2005</td>
+                <td class="text-center" style="width: 7.80%;">AGE</td>
+                <td style="width: 40.11%;" id="prevAge">21</td>
+              </tr>
+              <tr>
+                <td class="text-center">
+                  <img src="icon_phone.png" alt="Phone" style="height: 18px; vertical-align: middle;">
+                </td>
+                <td id="prevPhone">+918459738053</td>
+                <td class="text-center">
+                  <img src="icon_email.jpg" alt="Email" style="height: 13px; vertical-align: middle;">
+                </td>
+                <td>
+                  <a href="mailto:bhushanpadghan87@gmail.com" id="prevEmail" style="color: #0000ee; text-decoration: underline;">bhushanpadghan87@gmail.com</a>
+                </td>
+              </tr>
+            </table>
+
+            <!-- 2. LANGUAGES KNOWN -->
+            <table class="cv-table">
+              <tr>
+                <th colspan="4" class="banner-cell">LANGUAGES KNOWN</th>
+              </tr>
+              <tr>
+                <th class="col-head" style="width: 23.63%; text-align: center;">Languages</th>
+                <th class="col-head" style="width: 26.23%; text-align: center;">Speak</th>
+                <th class="col-head" style="width: 26.23%; text-align: center;">Read</th>
+                <th class="col-head" style="width: 23.90%; text-align: center;">Write</th>
+              </tr>
+              <tbody id="prevLanguagesTbody">
+                <!-- Rendered via JS -->
+              </tbody>
+            </table>
+
+            <!-- 3. ACADEMIC DETAILS -->
+            <table class="cv-table">
+              <tr>
+                <th colspan="6" class="banner-cell">ACADEMIC DETAILS</th>
+              </tr>
+              <tr>
+                <th class="col-head font-bold" style="width: 16.79%; text-align: left; padding-left: 5px;">Degree</th>
+                <th class="col-head font-bold" style="width: 16.90%; text-align: left; padding-left: 5px;">Stream</th>
+                <th class="col-head font-bold" style="width: 18.06%; text-align: left; padding-left: 5px;">University/Board</th>
+                <th class="col-head font-bold" style="width: 25.86%; text-align: left; padding-left: 5px;">Institute</th>
+                <th class="col-head font-bold" style="width: 9.21%; text-align: center; white-space: nowrap;">Year</th>
+                <th class="col-head font-bold" style="width: 13.17%; text-align: center; white-space: nowrap;">(%/GPA)</th>
+              </tr>
+              <tbody id="prevAcademicsTbody">
+                <!-- Rendered via JS -->
+              </tbody>
+            </table>
+
+            <div class="cv-certify-text">
+              I certify that the marks mentioned in above table have been verified as correct.
+            </div>
+            <div class="cv-director-row">
+              <span>DATE: <span id="prevDirectorDate"></span></span>
+              <span>DIRECTOR</span>
+            </div>
+
+            <!-- 4. SUMMER INTERNSHIP -->
+            <table class="cv-table">
+              <tr>
+                <th class="banner-cell text-left">SUMMER INTERNSHIP:</th>
+              </tr>
+              <tr>
+                <td style="padding: 5px 8px;">
+                  <div style="font-weight: bold; margin-bottom: 2px;">
+                    <span id="prevInternCompany">C3aLabs India Pvt Ltd</span>
+                    <span id="prevInternPeriod" style="margin-left: 4px;">| (Mar 2026)</span>
+                  </div>
+                  <div style="margin-bottom: 3px;" id="prevInternRole">
+                    HR & Marketing Intern Using AI and Automation
+                  </div>
+                  <ul class="cv-bullets" id="prevInternBullets">
+                    <!-- Rendered via JS -->
+                  </ul>
+                </td>
+              </tr>
+            </table>
+
+          </div>
+        </div>
+
+        <!-- Visual Page Separator -->
+        <div class="page-separator no-print" style="color: #475569; font-size: 0.75rem; font-weight: 600; text-align: center;">
+          ▼ Page 2 of Official CV Format ▼
+        </div>
+
+        <!-- ==========================================
+             PAGE 2 (Official BITM CV Paper)
+             ========================================== -->
+        <div class="cv-page" id="cvPage2">
+          <div class="cv-page-frame">
+
+            <!-- 5. KEY PROJECTS -->
+            <table class="cv-table">
+              <tr>
+                <th class="banner-cell">KEY PROJECTS</th>
+              </tr>
+              <tr>
+                <td style="padding: 5px 8px; border-bottom: 1px solid #000;">
+                  <div style="font-weight: bold; text-decoration: underline; margin-bottom: 3px;">Research Projects</div>
+                  <div id="prevResearchProjects">
+                    <!-- Rendered via JS -->
+                  </div>
+                </td>
+              </tr>
+              <tr>
+                <td style="padding: 5px 8px;">
+                  <div style="font-weight: bold; text-decoration: underline; margin-bottom: 3px;">Other Projects</div>
+                  <div id="prevOtherProjects">
+                    <!-- Rendered via JS -->
+                  </div>
+                </td>
+              </tr>
+            </table>
+
+            <!-- 6. CERTIFICATIONS -->
+            <table class="cv-table">
+              <tr>
+                <th class="banner-cell">CERTIFICATIONS</th>
+              </tr>
+              <tr>
+                <td style="padding: 5px 8px;">
+                  <div id="prevCertifications">
+                    <!-- Rendered via JS -->
+                  </div>
+                </td>
+              </tr>
+            </table>
+
+            <!-- 7. POSITION OF RESPONSIBILITY & ACHIVEMENTS -->
+            <table class="cv-table">
+              <tr>
+                <th class="banner-cell">POSITION OF RESPONSIBILITY & ACHIVEMENTS</th>
+              </tr>
+              <tr>
+                <td style="padding: 5px 8px;">
+                  <ul class="cv-bullets" id="prevResponsibilities">
+                    <!-- Rendered via JS -->
+                  </ul>
+                </td>
+              </tr>
+            </table>
+
+            <!-- 8. EXTRA-CURRICULAR ACTIVITIES -->
+            <table class="cv-table">
+              <tr>
+                <th class="banner-cell">EXTRA-CURRICULAR ACTIVITIES</th>
+              </tr>
+              <tr>
+                <td style="padding: 5px 8px;">
+                  <ul class="cv-bullets" id="prevExtraCurricular">
+                    <!-- Rendered via JS -->
+                  </ul>
+                </td>
+              </tr>
+            </table>
+
+            <!-- 9. HOBBIES & INTERESTS -->
+            <table class="cv-table">
+              <tr>
+                <th class="banner-cell">HOBBIES & INTERESTS</th>
+              </tr>
+              <tr>
+                <td style="padding: 5px 8px;">
+                  <ul class="cv-bullets" id="prevHobbies">
+                    <!-- Rendered via JS -->
+                  </ul>
+                </td>
+              </tr>
+            </table>
+
+            <!-- 10. SIGNATURE FOOTER -->
+            <div class="cv-signatures">
+              <div class="cv-sig-row">
+                <span>DATE: <span id="prevFooterDate"></span></span>
+                <span>SIGNATURE OF STUDENT</span>
+              </div>
+
+              <div class="cv-countersigned">
+                COUNTERSIGNED
+              </div>
+
+              <div class="cv-sig-row" style="margin-bottom: 0;">
+                <span>PLACE:<span id="prevPlace">PUNE</span></span>
+                <span>STAMP & SIGNATURE OF DIRECTOR</span>
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+      </div>
+
+    </section>
+
+  </main>
+
+  <!-- MODAL: Official CV Formatting Instructions -->
+  <div class="modal-overlay" id="instructionsModal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3>📘 Official CV Formatting Instructions</h3>
+        <button type="button" class="btn btn-secondary btn-sm" onclick="closeModal('instructionsModal')">✕</button>
+      </div>
+      <div class="modal-body">
+        <p style="font-weight: 700; color: #0e3860; margin-bottom: 0.75rem;">
+          Balaji Institute of Telecom & Management (BITM) • Career Planning & Placement Cell Guidelines
+        </p>
+        <ol>
+          <li><strong>Name:</strong> 14 pt, bold, and properly aligned as per the given format.</li>
+          <li><strong>Font:</strong> Use Arial throughout the CV.</li>
+          <li><strong>Font Size:</strong> Keep the overall CV content at 11 pt.</li>
+          <li><strong>Headings:</strong> Only the headings should be bold. Keep the details/content in normal font.</li>
+          <li><strong>Alignment:</strong> Follow the alignment given in the CV format. Keep tick marks (✓) and other elements properly center-aligned wherever required.</li>
+          <li><strong>Margins:</strong> Keep a little space on all four sides of the page.</li>
+          <li><strong>Spacing:</strong> Maintain proper and consistent spacing between sections. Keep equal space after every section and avoid unnecessary blank spaces.</li>
+          <li><strong>Specialisation:</strong> Write your specialisation as per the given format. If it doesn’t fit, use a short form. Tech students should use the required short form.</li>
+          <li><strong>Internship/Certification Dates:</strong> Mention the internship and certification dates on the right side, aligned consistently throughout the CV.</li>
+          <li><strong>Passing Year:</strong> Mention only the passing year. Example: 2023 ✅ | 2022–23 ❌. For MBA, mention 2026–28 in the Passing Year column and write “Pursuing” in the Percentage/CGPA column.</li>
+          <li><strong>Marks:</strong> If you are adding marks, mention them only in Percentage or CGPA. Do not use any other format.</li>
+          <li><strong>Photo:</strong> Use a formal photograph with a white background.</li>
+          <li><strong>Content:</strong> Fill in your correct and updated details. Do not change the order or add unnecessary information.</li>
+          <li><strong>Formatting:</strong> Do not change the overall structure, headings, or layout of the given CV format.</li>
+          <li><strong>Final Check:</strong> Check spelling, contact details, font size, bold headings, alignment, spacing, dates, marks, photo, and overall appearance before submitting.</li>
+        </ol>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-primary" onclick="closeModal('instructionsModal')">
+          Understood, Close
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: AI Copilot -->
+  <div class="modal-overlay" id="aiModal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3>✨ OpenRouter AI CV Assistant</h3>
+        <button type="button" class="btn btn-secondary btn-sm" onclick="closeModal('aiModal')">✕</button>
+      </div>
+      <div class="modal-body">
+        <p style="font-size: 0.8rem; color: #475569; margin-bottom: 1rem;">
+          Using OpenRouter AI (<code>openai/gpt-4o-mini</code>) to enhance your CV content according to BITM MBA standards.
+        </p>
+
+        <div class="form-group" style="margin-bottom: 1rem;">
+          <label>Select AI Action</label>
+          <select id="selAiAction">
+            <option value="enhance_internship">Polish Internship Bullet Points (Action Verbs & Impact)</option>
+            <option value="enhance_projects">Enhance Research & Other Projects (STAR Method)</option>
+            <option value="enhance_achievements">Refine Responsibilities & Achievements</option>
+            <option value="full_audit">Check BITM Formatting Compliance</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label>Optional Context / Notes (e.g. key tools, results)</label>
+          <textarea id="txtAiContext" rows="3" placeholder="e.g. Worked with Python and Power BI, improved conversion by 15%..."></textarea>
+        </div>
+
+        <div id="aiStatusArea" style="margin-top: 1rem; font-size: 0.8rem; display: none;"></div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" onclick="closeModal('aiModal')">Cancel</button>
+        <button type="button" class="btn btn-ai" id="btnExecuteAi">Execute AI Action</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>

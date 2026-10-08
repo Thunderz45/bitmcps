@@ -604,12 +604,12 @@ function updateLivePreview() {
   cvState.academics.forEach(a => {
     const tr = document.createElement("tr");
     tr.innerHTML = `
-      <td class="text-left font-bold" style="padding-left: 5px;">${a.degree}</td>
+      <td class="text-left" style="padding-left: 5px;">${a.degree}</td>
       <td class="text-left" style="padding-left: 5px;">${a.stream}</td>
       <td class="text-left" style="padding-left: 5px;">${a.university}</td>
       <td class="text-left" style="padding-left: 5px;">${a.institute}</td>
       <td class="text-center" style="white-space: nowrap;">${a.year}</td>
-      <td class="text-center font-bold" style="white-space: nowrap;">${a.percentage}</td>
+      <td class="text-center" style="white-space: nowrap;">${a.percentage}</td>
     `;
     acadTbody.appendChild(tr);
   });

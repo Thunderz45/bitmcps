@@ -152,6 +152,59 @@ const SAMPLE_CV_DATA = {
 // Current Active State
 let cvState = JSON.parse(JSON.stringify(SAMPLE_CV_DATA));
 
+function ensureCvStateIntegrity() {
+  if (!cvState || typeof cvState !== "object") {
+    cvState = JSON.parse(JSON.stringify(SAMPLE_CV_DATA));
+  }
+  if (!cvState.personalInfo) cvState.personalInfo = {};
+  if (!Array.isArray(cvState.languages)) cvState.languages = [];
+  if (!Array.isArray(cvState.academics)) cvState.academics = [];
+  if (!cvState.internship) cvState.internship = { company: "", period: "", role: "", bullets: [] };
+  if (!Array.isArray(cvState.internship.bullets)) cvState.internship.bullets = [];
+  if (!cvState.projects) cvState.projects = { research: [], other: [] };
+  if (!Array.isArray(cvState.projects.research)) cvState.projects.research = [];
+  if (!Array.isArray(cvState.projects.other)) cvState.projects.other = [];
+  if (!Array.isArray(cvState.certifications)) cvState.certifications = [];
+  if (!Array.isArray(cvState.responsibilities)) cvState.responsibilities = [];
+  if (!Array.isArray(cvState.extraCurricular)) cvState.extraCurricular = [];
+  if (!Array.isArray(cvState.hobbies)) cvState.hobbies = [];
+  if (!cvState.signatures) cvState.signatures = { place: "PUNE", date: "" };
+  if (!cvState.sectionVisibility) {
+    cvState.sectionVisibility = {
+      summerInternship: true,
+      researchProjects: true,
+      otherProjects: true,
+      certifications: true,
+      responsibilities: true,
+      extraCurricular: true,
+      hobbies: true
+    };
+  }
+}
+
+function setCvStatePath(path, value) {
+  ensureCvStateIntegrity();
+  const parts = path.split(".");
+  let cur = cvState;
+  for (let i = 0; i < parts.length - 1; i++) {
+    if (!cur[parts[i]]) cur[parts[i]] = {};
+    cur = cur[parts[i]];
+  }
+  cur[parts[parts.length - 1]] = value;
+}
+
+let autoSaveTimer = null;
+function autoSaveDraft() {
+  clearTimeout(autoSaveTimer);
+  autoSaveTimer = setTimeout(() => {
+    try {
+      localStorage.setItem("bitm_official_cv_draft", JSON.stringify(cvState));
+    } catch (e) {
+      console.warn("Auto save draft failed:", e);
+    }
+  }, 250);
+}
+
 // Initialize on DOM Ready
 document.addEventListener("DOMContentLoaded", () => {
   loadDraftFromStorage();
@@ -166,6 +219,7 @@ document.addEventListener("DOMContentLoaded", () => {
    STORAGE FUNCTIONS
    ========================================================================== */
 function saveDraftToStorage() {
+  ensureCvStateIntegrity();
   localStorage.setItem("bitm_official_cv_draft", JSON.stringify(cvState));
   alert("✓ CV Draft saved to local storage successfully!");
 }
@@ -174,28 +228,22 @@ function loadDraftFromStorage() {
   const saved = localStorage.getItem("bitm_official_cv_draft");
   if (saved) {
     try {
-      cvState = JSON.parse(saved);
-      if (!cvState.sectionVisibility) {
-        cvState.sectionVisibility = {
-          summerInternship: true,
-          researchProjects: true,
-          otherProjects: true,
-          certifications: true,
-          responsibilities: true,
-          extraCurricular: true,
-          hobbies: true
-        };
+      const parsed = JSON.parse(saved);
+      if (parsed && typeof parsed === "object") {
+        cvState = parsed;
       }
     } catch (e) {
-      console.warn("Could not parse saved draft, using default sample.");
+      console.warn("Could not parse saved draft, using default sample:", e);
     }
   }
+  ensureCvStateIntegrity();
 }
 
 function resetToSampleData() {
   if (confirm("Reset all CV fields to the official BITM sample from Bhushan Padghan's reference?")) {
     cvState = JSON.parse(JSON.stringify(SAMPLE_CV_DATA));
     localStorage.removeItem("bitm_official_cv_draft");
+    ensureCvStateIntegrity();
     populateFormFields();
     renderDynamicFormItems();
     syncSectionVisibilityUI();
@@ -304,21 +352,29 @@ function syncSectionVisibilityUI() {
    FORM POPULATION & DYNAMIC FORM RENDERERS
    ========================================================================== */
 function populateFormFields() {
-  const p = cvState.personalInfo;
-  document.getElementById("inpName").value = p.fullName || "";
-  document.getElementById("inpSpec").value = p.specialization || "";
-  document.getElementById("inpAddress").value = p.address || "";
-  document.getElementById("inpDob").value = p.dob || "";
-  document.getElementById("inpAge").value = p.age || "";
-  document.getElementById("inpPhone").value = p.phone || "";
-  document.getElementById("inpEmail").value = p.email || "";
+  ensureCvStateIntegrity();
+  const p = cvState.personalInfo || {};
+  const setVal = (id, val) => {
+    const el = document.getElementById(id);
+    if (el) el.value = (val !== undefined && val !== null) ? val : "";
+  };
 
-  document.getElementById("inpInternCompany").value = cvState.internship.company || "";
-  document.getElementById("inpInternPeriod").value = cvState.internship.period || "";
-  document.getElementById("inpInternRole").value = cvState.internship.role || "";
+  setVal("inpName", p.fullName);
+  setVal("inpSpec", p.specialization);
+  setVal("inpAddress", p.address);
+  setVal("inpDob", p.dob);
+  setVal("inpAge", p.age);
+  setVal("inpPhone", p.phone);
+  setVal("inpEmail", p.email);
 
-  document.getElementById("inpPlace").value = cvState.signatures.place || "PUNE";
-  document.getElementById("inpDate").value = cvState.signatures.date || "";
+  const intern = cvState.internship || {};
+  setVal("inpInternCompany", intern.company);
+  setVal("inpInternPeriod", intern.period);
+  setVal("inpInternRole", intern.role);
+
+  const sigs = cvState.signatures || {};
+  setVal("inpPlace", sigs.place || "PUNE");
+  setVal("inpDate", sigs.date || "");
 }
 
 function renderDynamicFormItems() {
@@ -359,62 +415,72 @@ function renderLanguagesForm() {
 }
 
 function updateLanguageField(idx, field, val) {
-  cvState.languages[idx][field] = val;
-  updateLivePreview();
+  ensureCvStateIntegrity();
+  if (cvState.languages[idx]) {
+    cvState.languages[idx][field] = val;
+    updateLivePreview();
+    autoSaveDraft();
+  }
 }
 
 function addLanguage() {
+  ensureCvStateIntegrity();
   cvState.languages.push({ language: "New Language", speak: true, read: true, write: true });
   renderLanguagesForm();
   updateLivePreview();
+  autoSaveDraft();
 }
 
 function removeLanguage(idx) {
+  ensureCvStateIntegrity();
   cvState.languages.splice(idx, 1);
   renderLanguagesForm();
   updateLivePreview();
+  autoSaveDraft();
 }
 
 /* 2. Academics Form */
 function renderAcademicsForm() {
+  ensureCvStateIntegrity();
   const c = document.getElementById("academicsContainer");
+  if (!c) return;
   c.innerHTML = "";
   cvState.academics.forEach((acad, idx) => {
     const box = document.createElement("div");
     box.className = "dynamic-item";
     box.innerHTML = `
       <div class="dynamic-item-header">
-        <span>#${idx + 1} Degree: ${acad.degree}</span>
+        <span>#${idx + 1} Degree: ${acad.degree || ""}</span>
         <button type="button" class="btn btn-danger btn-sm" onclick="removeAcademic(${idx})">Delete</button>
       </div>
       <div class="form-row">
         <div class="form-group">
           <label>Degree</label>
-          <input type="text" value="${acad.degree}" oninput="updateAcademicField(${idx}, 'degree', this.value)" placeholder="MBA / BCA / XII / X">
+          <input type="text" value="${acad.degree || ""}" oninput="updateAcademicField(${idx}, 'degree', this.value)" placeholder="MBA / BCA / XII / X">
         </div>
         <div class="form-group">
           <label>Stream</label>
-          <input type="text" value="${acad.stream}" oninput="updateAcademicField(${idx}, 'stream', this.value)" placeholder="Stream / Specialization">
+          <input type="text" value="${acad.stream || ""}" oninput="updateAcademicField(${idx}, 'stream', this.value)" placeholder="Stream / Specialization">
         </div>
       </div>
       <div class="form-row">
         <div class="form-group">
           <label>University / Board</label>
-          <input type="text" value="${acad.university}" oninput="updateAcademicField(${idx}, 'university', this.value)" placeholder="University / Board">
+          <input type="text" value="${acad.university || ""}" oninput="updateAcademicField(${idx}, 'university', this.value)" placeholder="University / Board">
         </div>
         <div class="form-group">
           <label>Institute / College</label>
-          <input type="text" value="${acad.institute}" oninput="updateAcademicField(${idx}, 'institute', this.value)" placeholder="Institute Name">
+          <input type="text" value="${acad.institute || ""}" oninput="updateAcademicField(${idx}, 'institute', this.value)" placeholder="Institute Name">
         </div>
       </div>
       <div class="form-row">
         <div class="form-group">
           <label>Passing Year (e.g. 2026–28 or 2023)</label>
-          <input type="text" value="${acad.year}" oninput="updateAcademicField(${idx}, 'year', this.value)" placeholder="2026–28 or 2023">
+          <input type="text" value="${acad.year || ""}" oninput="updateAcademicField(${idx}, 'year', this.value)" placeholder="2026–28 or 2023">
         </div>
         <div class="form-group">
           <label>Percentage / CGPA (e.g. Pursuing or 68.60%)</label>
-          <input type="text" value="${acad.percentage}" oninput="updateAcademicField(${idx}, 'percentage', this.value)" placeholder="Pursuing or 75.00%">
+          <input type="text" value="${acad.percentage || ""}" oninput="updateAcademicField(${idx}, 'percentage', this.value)" placeholder="Pursuing or 75.00%">
         </div>
       </div>
     `;
@@ -423,11 +489,16 @@ function renderAcademicsForm() {
 }
 
 function updateAcademicField(idx, field, val) {
-  cvState.academics[idx][field] = val;
-  updateLivePreview();
+  ensureCvStateIntegrity();
+  if (cvState.academics[idx]) {
+    cvState.academics[idx][field] = val;
+    updateLivePreview();
+    autoSaveDraft();
+  }
 }
 
 function addAcademic() {
+  ensureCvStateIntegrity();
   cvState.academics.push({
     degree: "New Degree",
     stream: "Field of Study",
@@ -438,19 +509,24 @@ function addAcademic() {
   });
   renderAcademicsForm();
   updateLivePreview();
+  autoSaveDraft();
 }
 
 function removeAcademic(idx) {
+  ensureCvStateIntegrity();
   cvState.academics.splice(idx, 1);
   renderAcademicsForm();
   updateLivePreview();
+  autoSaveDraft();
 }
 
 /* 3. Summer Internship Bullets */
 function renderInternshipBulletsForm() {
+  ensureCvStateIntegrity();
   const c = document.getElementById("internBulletsContainer");
+  if (!c) return;
   c.innerHTML = "";
-  cvState.internship.bullets.forEach((b, idx) => {
+  (cvState.internship.bullets || []).forEach((b, idx) => {
     const row = document.createElement("div");
     row.style.display = "flex";
     row.style.gap = "0.5rem";
@@ -465,124 +541,163 @@ function renderInternshipBulletsForm() {
 }
 
 function updateInternBullet(idx, val) {
-  cvState.internship.bullets[idx] = val;
-  updateLivePreview();
+  ensureCvStateIntegrity();
+  if (cvState.internship.bullets) {
+    cvState.internship.bullets[idx] = val;
+    updateLivePreview();
+    autoSaveDraft();
+  }
 }
 
 function addInternBullet() {
+  ensureCvStateIntegrity();
   cvState.internship.bullets.push("Contributed to strategic initiatives and operational excellence.");
   renderInternshipBulletsForm();
   updateLivePreview();
+  autoSaveDraft();
 }
 
 function removeInternBullet(idx) {
+  ensureCvStateIntegrity();
   cvState.internship.bullets.splice(idx, 1);
   renderInternshipBulletsForm();
   updateLivePreview();
+  autoSaveDraft();
 }
 
 /* 4. Projects Form */
 function renderProjectsForm() {
+  ensureCvStateIntegrity();
   // Research
   const rCont = document.getElementById("researchProjectsContainer");
-  rCont.innerHTML = "";
-  cvState.projects.research.forEach((proj, pIdx) => {
-    const box = document.createElement("div");
-    box.className = "dynamic-item";
-    box.innerHTML = `
-      <div class="dynamic-item-header">
-        <span>Research Project #${pIdx + 1}</span>
-        <button type="button" class="btn btn-danger btn-sm" onclick="removeResearchProject(${pIdx})">Delete</button>
-      </div>
-      <div class="form-group">
-        <label>Title & Date</label>
-        <input type="text" value="${proj.title}" oninput="updateResearchProjTitle(${pIdx}, this.value)">
-      </div>
-      <div class="form-group">
-        <label>Description</label>
-        <textarea rows="3" oninput="updateResearchProjBullet(${pIdx}, 0, this.value)">${proj.bullets[0] || ""}</textarea>
-      </div>
-    `;
-    rCont.appendChild(box);
-  });
+  if (rCont) {
+    rCont.innerHTML = "";
+    cvState.projects.research.forEach((proj, pIdx) => {
+      const box = document.createElement("div");
+      box.className = "dynamic-item";
+      box.innerHTML = `
+        <div class="dynamic-item-header">
+          <span>Research Project #${pIdx + 1}</span>
+          <button type="button" class="btn btn-danger btn-sm" onclick="removeResearchProject(${pIdx})">Delete</button>
+        </div>
+        <div class="form-group">
+          <label>Title & Date</label>
+          <input type="text" value="${proj.title || ""}" oninput="updateResearchProjTitle(${pIdx}, this.value)">
+        </div>
+        <div class="form-group">
+          <label>Description</label>
+          <textarea rows="3" oninput="updateResearchProjBullet(${pIdx}, 0, this.value)">${proj.bullets[0] || ""}</textarea>
+        </div>
+      `;
+      rCont.appendChild(box);
+    });
+  }
 
   // Other Projects
   const oCont = document.getElementById("otherProjectsContainer");
-  oCont.innerHTML = "";
-  cvState.projects.other.forEach((proj, pIdx) => {
-    const box = document.createElement("div");
-    box.className = "dynamic-item";
-    box.innerHTML = `
-      <div class="dynamic-item-header">
-        <span>Other Project #${pIdx + 1}</span>
-        <button type="button" class="btn btn-danger btn-sm" onclick="removeOtherProject(${pIdx})">Delete</button>
-      </div>
-      <div class="form-group">
-        <label>Title & Date</label>
-        <input type="text" value="${proj.title}" oninput="updateOtherProjTitle(${pIdx}, this.value)">
-      </div>
-      <div class="form-group">
-        <label>Description</label>
-        <textarea rows="3" oninput="updateOtherProjBullet(${pIdx}, 0, this.value)">${proj.bullets[0] || ""}</textarea>
-      </div>
-    `;
-    oCont.appendChild(box);
-  });
+  if (oCont) {
+    oCont.innerHTML = "";
+    cvState.projects.other.forEach((proj, pIdx) => {
+      const box = document.createElement("div");
+      box.className = "dynamic-item";
+      box.innerHTML = `
+        <div class="dynamic-item-header">
+          <span>Other Project #${pIdx + 1}</span>
+          <button type="button" class="btn btn-danger btn-sm" onclick="removeOtherProject(${pIdx})">Delete</button>
+        </div>
+        <div class="form-group">
+          <label>Title & Date</label>
+          <input type="text" value="${proj.title || ""}" oninput="updateOtherProjTitle(${pIdx}, this.value)">
+        </div>
+        <div class="form-group">
+          <label>Description</label>
+          <textarea rows="3" oninput="updateOtherProjBullet(${pIdx}, 0, this.value)">${proj.bullets[0] || ""}</textarea>
+        </div>
+      `;
+      oCont.appendChild(box);
+    });
+  }
 }
 
 function updateResearchProjTitle(idx, val) {
-  cvState.projects.research[idx].title = val;
-  updateLivePreview();
+  ensureCvStateIntegrity();
+  if (cvState.projects.research[idx]) {
+    cvState.projects.research[idx].title = val;
+    updateLivePreview();
+    autoSaveDraft();
+  }
 }
 
 function updateResearchProjBullet(pIdx, bIdx, val) {
-  cvState.projects.research[pIdx].bullets[bIdx] = val;
-  updateLivePreview();
+  ensureCvStateIntegrity();
+  if (cvState.projects.research[pIdx] && cvState.projects.research[pIdx].bullets) {
+    cvState.projects.research[pIdx].bullets[bIdx] = val;
+    updateLivePreview();
+    autoSaveDraft();
+  }
 }
 
 function addResearchProject() {
+  ensureCvStateIntegrity();
   cvState.projects.research.push({
     title: "AI-Powered Predictive Business Modeling | (Dec 2025)",
     bullets: ["Formulated predictive ML architecture analyzing business growth indicators."]
   });
   renderProjectsForm();
   updateLivePreview();
+  autoSaveDraft();
 }
 
 function removeResearchProject(idx) {
+  ensureCvStateIntegrity();
   cvState.projects.research.splice(idx, 1);
   renderProjectsForm();
   updateLivePreview();
+  autoSaveDraft();
 }
 
 function updateOtherProjTitle(idx, val) {
-  cvState.projects.other[idx].title = val;
-  updateLivePreview();
+  ensureCvStateIntegrity();
+  if (cvState.projects.other[idx]) {
+    cvState.projects.other[idx].title = val;
+    updateLivePreview();
+    autoSaveDraft();
+  }
 }
 
 function updateOtherProjBullet(pIdx, bIdx, val) {
-  cvState.projects.other[pIdx].bullets[bIdx] = val;
-  updateLivePreview();
+  ensureCvStateIntegrity();
+  if (cvState.projects.other[pIdx] && cvState.projects.other[pIdx].bullets) {
+    cvState.projects.other[pIdx].bullets[bIdx] = val;
+    updateLivePreview();
+    autoSaveDraft();
+  }
 }
 
 function addOtherProject() {
+  ensureCvStateIntegrity();
   cvState.projects.other.push({
     title: "Digital Venture Strategy & Web Platform | (Nov 2025)",
     bullets: ["Architected and deployed full-stack web application for organizational automation."]
   });
   renderProjectsForm();
   updateLivePreview();
+  autoSaveDraft();
 }
 
 function removeOtherProject(idx) {
+  ensureCvStateIntegrity();
   cvState.projects.other.splice(idx, 1);
   renderProjectsForm();
   updateLivePreview();
+  autoSaveDraft();
 }
 
 /* 5. Certifications Form */
 function renderCertificationsForm() {
+  ensureCvStateIntegrity();
   const c = document.getElementById("certificationsContainer");
+  if (!c) return;
   c.innerHTML = "";
   cvState.certifications.forEach((cert, cIdx) => {
     const box = document.createElement("div");
@@ -594,7 +709,7 @@ function renderCertificationsForm() {
       </div>
       <div class="form-group">
         <label>Certificate Title, Institute & Date</label>
-        <input type="text" value="${cert.title}" oninput="updateCertTitle(${cIdx}, this.value)">
+        <input type="text" value="${cert.title || ""}" oninput="updateCertTitle(${cIdx}, this.value)">
       </div>
       <div class="form-group">
         <label>Description</label>
@@ -606,28 +721,40 @@ function renderCertificationsForm() {
 }
 
 function updateCertTitle(idx, val) {
-  cvState.certifications[idx].title = val;
-  updateLivePreview();
+  ensureCvStateIntegrity();
+  if (cvState.certifications[idx]) {
+    cvState.certifications[idx].title = val;
+    updateLivePreview();
+    autoSaveDraft();
+  }
 }
 
 function updateCertBullet(cIdx, bIdx, val) {
-  cvState.certifications[cIdx].bullets[bIdx] = val;
-  updateLivePreview();
+  ensureCvStateIntegrity();
+  if (cvState.certifications[cIdx] && cvState.certifications[cIdx].bullets) {
+    cvState.certifications[cIdx].bullets[bIdx] = val;
+    updateLivePreview();
+    autoSaveDraft();
+  }
 }
 
 function addCertification() {
+  ensureCvStateIntegrity();
   cvState.certifications.push({
     title: "Executive Management & Analytics | IIM / SBUP | (Jan 2026)",
     bullets: ["Demonstrated competency in key strategic business analytics frameworks."]
   });
   renderCertificationsForm();
   updateLivePreview();
+  autoSaveDraft();
 }
 
 function removeCertification(idx) {
+  ensureCvStateIntegrity();
   cvState.certifications.splice(idx, 1);
   renderCertificationsForm();
   updateLivePreview();
+  autoSaveDraft();
 }
 
 /* 6, 7, 8. Simple List Forms */
@@ -644,16 +771,18 @@ function renderHobbiesForm() {
 }
 
 function renderSimpleListForm(containerId, list, stateKey) {
+  ensureCvStateIntegrity();
   const c = document.getElementById(containerId);
+  if (!c) return;
   c.innerHTML = "";
-  list.forEach((item, idx) => {
+  (list || []).forEach((item, idx) => {
     const row = document.createElement("div");
     row.style.display = "flex";
     row.style.gap = "0.5rem";
     row.style.alignItems = "center";
     row.innerHTML = `
       <span style="color:#94a3b8;">•</span>
-      <input type="text" style="flex:1;" value="${item}" oninput="updateSimpleListItem('${stateKey}', ${idx}, this.value)">
+      <input type="text" style="flex:1;" value="${item || ""}" oninput="updateSimpleListItem('${stateKey}', ${idx}, this.value)">
       <button type="button" class="btn btn-danger btn-sm" onclick="removeSimpleListItem('${stateKey}', ${idx})">✕</button>
     `;
     c.appendChild(row);
@@ -661,167 +790,215 @@ function renderSimpleListForm(containerId, list, stateKey) {
 }
 
 function updateSimpleListItem(key, idx, val) {
-  cvState[key][idx] = val;
-  updateLivePreview();
+  ensureCvStateIntegrity();
+  if (cvState[key]) {
+    cvState[key][idx] = val;
+    updateLivePreview();
+    autoSaveDraft();
+  }
 }
 
 function addSimpleListItem(key, defaultVal) {
+  ensureCvStateIntegrity();
   cvState[key].push(defaultVal);
   if (key === "responsibilities") renderResponsibilitiesForm();
   else if (key === "extraCurricular") renderExtraCurricularForm();
   else if (key === "hobbies") renderHobbiesForm();
   updateLivePreview();
+  autoSaveDraft();
 }
 
 function removeSimpleListItem(key, idx) {
+  ensureCvStateIntegrity();
   cvState[key].splice(idx, 1);
   if (key === "responsibilities") renderResponsibilitiesForm();
   else if (key === "extraCurricular") renderExtraCurricularForm();
   else if (key === "hobbies") renderHobbiesForm();
   updateLivePreview();
+  autoSaveDraft();
 }
 
 /* ==========================================================================
    LIVE PREVIEW RENDERER (EXACT COPY-PASTE OF OFFICIAL BITM CV FORMAT)
    ========================================================================== */
 function updateLivePreview() {
-  const p = cvState.personalInfo;
+  ensureCvStateIntegrity();
+  const p = cvState.personalInfo || {};
+
+  const setText = (id, text) => {
+    const el = document.getElementById(id);
+    if (el && document.activeElement !== el) {
+      el.innerText = (text !== undefined && text !== null) ? text : "";
+    }
+  };
 
   // 1. Personal Information Table
-  document.getElementById("prevName").innerText = p.fullName || "Student Name";
-  document.getElementById("prevSpec").innerText = p.specialization || "Specialization";
-  document.getElementById("prevAddress").innerText = p.address || "";
-  document.getElementById("prevDob").innerText = p.dob || "";
-  document.getElementById("prevAge").innerText = p.age || "";
-  document.getElementById("prevPhone").innerText = p.phone || "";
+  setText("prevName", p.fullName || "Student Name");
+  setText("prevSpec", p.specialization || "Specialization");
+  setText("prevAddress", p.address || "");
+  setText("prevDob", p.dob || "");
+  setText("prevAge", p.age || "");
+  setText("prevPhone", p.phone || "");
 
   const emailLink = document.getElementById("prevEmail");
-  emailLink.innerText = p.email || "";
-  emailLink.href = p.email ? `mailto:${p.email}` : "#";
+  if (emailLink) {
+    if (document.activeElement !== emailLink) {
+      emailLink.innerText = p.email || "";
+    }
+    emailLink.href = p.email ? `mailto:${p.email}` : "#";
+  }
 
   // Photo
   const photoSlot = document.getElementById("prevPhotoSlot");
-  photoSlot.innerHTML = `<img src="${p.photoUrl || 'sample_photo.jpg'}" alt="Student Photo">`;
+  if (photoSlot) {
+    photoSlot.innerHTML = `<img src="${p.photoUrl || 'sample_photo.jpg'}" alt="Student Photo">`;
+  }
 
   // 2. Languages Known Table
   const langTbody = document.getElementById("prevLanguagesTbody");
-  langTbody.innerHTML = "";
-  cvState.languages.forEach(l => {
-    const tr = document.createElement("tr");
-    tr.innerHTML = `
-      <td class="text-left" style="padding-left: 8px;">${l.language}</td>
-      <td class="text-center font-bold">${l.speak ? "✓" : ""}</td>
-      <td class="text-center font-bold">${l.read ? "✓" : ""}</td>
-      <td class="text-center font-bold">${l.write ? "✓" : ""}</td>
-    `;
-    langTbody.appendChild(tr);
-  });
+  if (langTbody) {
+    langTbody.innerHTML = "";
+    cvState.languages.forEach(l => {
+      const tr = document.createElement("tr");
+      tr.innerHTML = `
+        <td class="text-left" style="padding-left: 8px;">${l.language || ""}</td>
+        <td class="text-center font-bold">${l.speak ? "✓" : ""}</td>
+        <td class="text-center font-bold">${l.read ? "✓" : ""}</td>
+        <td class="text-center font-bold">${l.write ? "✓" : ""}</td>
+      `;
+      langTbody.appendChild(tr);
+    });
+  }
 
   // 3. Academic Details Table
   const acadTbody = document.getElementById("prevAcademicsTbody");
-  acadTbody.innerHTML = "";
-  cvState.academics.forEach(a => {
-    const tr = document.createElement("tr");
-    tr.innerHTML = `
-      <td class="text-left" style="padding-left: 5px;">${a.degree}</td>
-      <td class="text-left" style="padding-left: 5px;">${a.stream}</td>
-      <td class="text-left" style="padding-left: 5px;">${a.university}</td>
-      <td class="text-left" style="padding-left: 5px;">${a.institute}</td>
-      <td class="text-center" style="white-space: nowrap;">${a.year}</td>
-      <td class="text-center" style="white-space: nowrap;">${a.percentage}</td>
-    `;
-    acadTbody.appendChild(tr);
-  });
+  if (acadTbody) {
+    acadTbody.innerHTML = "";
+    cvState.academics.forEach(a => {
+      const tr = document.createElement("tr");
+      tr.innerHTML = `
+        <td class="text-left" style="padding-left: 5px;">${a.degree || ""}</td>
+        <td class="text-left" style="padding-left: 5px;">${a.stream || ""}</td>
+        <td class="text-left" style="padding-left: 5px;">${a.university || ""}</td>
+        <td class="text-left" style="padding-left: 5px;">${a.institute || ""}</td>
+        <td class="text-center" style="white-space: nowrap;">${a.year || ""}</td>
+        <td class="text-center" style="white-space: nowrap;">${a.percentage || ""}</td>
+      `;
+      acadTbody.appendChild(tr);
+    });
+  }
 
-  const sigDate = cvState.signatures.date || "";
-  document.getElementById("prevDirectorDate").innerText = sigDate;
-  document.getElementById("prevFooterDate").innerText = sigDate;
-  document.getElementById("prevPlace").innerText = cvState.signatures.place || "PUNE";
+  const sigDate = (cvState.signatures && cvState.signatures.date) || "";
+  setText("prevDirectorDate", sigDate);
+  setText("prevFooterDate", sigDate);
+  setText("prevPlace", (cvState.signatures && cvState.signatures.place) || "PUNE");
 
   // 4. Summer Internship
-  document.getElementById("prevInternCompany").innerText = cvState.internship.company || "";
-  const periodText = cvState.internship.period ? `| ${cvState.internship.period.trim()}` : "";
-  document.getElementById("prevInternPeriod").innerText = periodText;
-  document.getElementById("prevInternRole").innerText = cvState.internship.role || "";
+  setText("prevInternCompany", (cvState.internship && cvState.internship.company) || "");
+  const periodVal = cvState.internship && cvState.internship.period;
+  const periodText = periodVal ? `| ${periodVal.trim()}` : "";
+  setText("prevInternPeriod", periodText);
+  setText("prevInternRole", (cvState.internship && cvState.internship.role) || "");
 
   const internBullets = document.getElementById("prevInternBullets");
-  internBullets.innerHTML = "";
-  cvState.internship.bullets.forEach(b => {
-    const li = document.createElement("li");
-    li.innerText = b;
-    internBullets.appendChild(li);
-  });
+  if (internBullets) {
+    internBullets.innerHTML = "";
+    const bList = (cvState.internship && cvState.internship.bullets) || [];
+    bList.forEach(b => {
+      const li = document.createElement("li");
+      li.innerText = b;
+      internBullets.appendChild(li);
+    });
+  }
 
   // 5. Key Projects - Research
   const rCont = document.getElementById("prevResearchProjects");
-  rCont.innerHTML = "";
-  cvState.projects.research.forEach(rp => {
-    const div = document.createElement("div");
-    div.style.marginBottom = "4px";
-    div.innerHTML = `
-      <div style="font-weight: bold;">${rp.title}</div>
-      <ul class="cv-bullets">${rp.bullets.map(b => `<li>${b}</li>`).join("")}</ul>
-    `;
-    rCont.appendChild(div);
-  });
+  if (rCont) {
+    rCont.innerHTML = "";
+    const resList = (cvState.projects && cvState.projects.research) || [];
+    resList.forEach(rp => {
+      const div = document.createElement("div");
+      div.style.marginBottom = "4px";
+      div.innerHTML = `
+        <div style="font-weight: bold;">${rp.title || ""}</div>
+        <ul class="cv-bullets">${(rp.bullets || []).map(b => `<li>${b}</li>`).join("")}</ul>
+      `;
+      rCont.appendChild(div);
+    });
+  }
 
   // 5. Key Projects - Other
   const oCont = document.getElementById("prevOtherProjects");
-  oCont.innerHTML = "";
-  cvState.projects.other.forEach(op => {
-    const div = document.createElement("div");
-    div.style.marginBottom = "4px";
-    div.innerHTML = `
-      <div style="font-weight: bold;">${op.title}</div>
-      <ul class="cv-bullets">${op.bullets.map(b => `<li>${b}</li>`).join("")}</ul>
-    `;
-    oCont.appendChild(div);
-  });
+  if (oCont) {
+    oCont.innerHTML = "";
+    const othList = (cvState.projects && cvState.projects.other) || [];
+    othList.forEach(op => {
+      const div = document.createElement("div");
+      div.style.marginBottom = "4px";
+      div.innerHTML = `
+        <div style="font-weight: bold;">${op.title || ""}</div>
+        <ul class="cv-bullets">${(op.bullets || []).map(b => `<li>${b}</li>`).join("")}</ul>
+      `;
+      oCont.appendChild(div);
+    });
+  }
 
   // 6. Certifications
   const certCont = document.getElementById("prevCertifications");
-  certCont.innerHTML = "";
-  cvState.certifications.forEach(c => {
-    const div = document.createElement("div");
-    div.style.marginBottom = "4px";
-    div.innerHTML = `
-      <div style="font-weight: bold;">${c.title}</div>
-      <ul class="cv-bullets">${c.bullets.map(b => `<li>${b}</li>`).join("")}</ul>
-    `;
-    certCont.appendChild(div);
-  });
+  if (certCont) {
+    certCont.innerHTML = "";
+    const certList = cvState.certifications || [];
+    certList.forEach(c => {
+      const div = document.createElement("div");
+      div.style.marginBottom = "4px";
+      div.innerHTML = `
+        <div style="font-weight: bold;">${c.title || ""}</div>
+        <ul class="cv-bullets">${(c.bullets || []).map(b => `<li>${b}</li>`).join("")}</ul>
+      `;
+      certCont.appendChild(div);
+    });
+  }
 
   // 7. Responsibilities & Achievements
   const respCont = document.getElementById("prevResponsibilities");
-  respCont.innerHTML = "";
-  cvState.responsibilities.forEach(r => {
-    const li = document.createElement("li");
-    if (r.includes(" – ")) {
-      const parts = r.split(" – ");
-      li.innerHTML = `<strong>${parts[0]}</strong> – ${parts.slice(1).join(" – ")}`;
-    } else {
-      li.innerText = r;
-    }
-    respCont.appendChild(li);
-  });
+  if (respCont) {
+    respCont.innerHTML = "";
+    const respList = cvState.responsibilities || [];
+    respList.forEach(r => {
+      const li = document.createElement("li");
+      if (r && r.includes(" – ")) {
+        const parts = r.split(" – ");
+        li.innerHTML = `<strong>${parts[0]}</strong> – ${parts.slice(1).join(" – ")}`;
+      } else {
+        li.innerText = r || "";
+      }
+      respCont.appendChild(li);
+    });
+  }
 
   // 8. Extra-Curricular Activities
   const extraCont = document.getElementById("prevExtraCurricular");
-  extraCont.innerHTML = "";
-  cvState.extraCurricular.forEach(e => {
-    const li = document.createElement("li");
-    li.innerText = e;
-    extraCont.appendChild(li);
-  });
+  if (extraCont) {
+    extraCont.innerHTML = "";
+    const extraList = cvState.extraCurricular || [];
+    extraList.forEach(e => {
+      const li = document.createElement("li");
+      li.innerText = e || "";
+      extraCont.appendChild(li);
+    });
+  }
 
   // 9. Hobbies & Interests
   const hobCont = document.getElementById("prevHobbies");
-  hobCont.innerHTML = "";
-  cvState.hobbies.forEach(h => {
-    const li = document.createElement("li");
-    li.innerText = h;
-    hobCont.appendChild(li);
-  });
+  if (hobCont) {
+    hobCont.innerHTML = "";
+    const hobList = cvState.hobbies || [];
+    hobList.forEach(h => {
+      const li = document.createElement("li");
+      li.innerText = h || "";
+      hobCont.appendChild(li);
+    });
+  }
 
   // Section Visibility Toggles in Live Preview
   const vis = cvState.sectionVisibility || {};
@@ -857,80 +1034,118 @@ function updateLivePreview() {
 }
 
 /* ==========================================================================
+   DIRECT TWO-WAY PREVIEW IN-PLACE EDITING
+   ========================================================================== */
+function attachPreviewDirectEditing() {
+  const syncFromPreview = (prevId, formInputId, statePath) => {
+    const el = document.getElementById(prevId);
+    if (!el) return;
+    el.setAttribute("contenteditable", "true");
+    el.classList.add("preview-editable");
+    el.setAttribute("title", "Click to edit directly on CV");
+    el.addEventListener("input", () => {
+      const val = el.innerText.trim();
+      setCvStatePath(statePath, val);
+      const inputEl = document.getElementById(formInputId);
+      if (inputEl) inputEl.value = val;
+      autoSaveDraft();
+    });
+  };
+
+  syncFromPreview("prevName", "inpName", "personalInfo.fullName");
+  syncFromPreview("prevSpec", "inpSpec", "personalInfo.specialization");
+  syncFromPreview("prevAddress", "inpAddress", "personalInfo.address");
+  syncFromPreview("prevDob", "inpDob", "personalInfo.dob");
+  syncFromPreview("prevAge", "inpAge", "personalInfo.age");
+  syncFromPreview("prevPhone", "inpPhone", "personalInfo.phone");
+  syncFromPreview("prevEmail", "inpEmail", "personalInfo.email");
+  syncFromPreview("prevInternCompany", "inpInternCompany", "internship.company");
+  syncFromPreview("prevInternRole", "inpInternRole", "internship.role");
+  syncFromPreview("prevPlace", "inpPlace", "signatures.place");
+  syncFromPreview("prevDirectorDate", "inpDate", "signatures.date");
+}
+
+/* ==========================================================================
    EVENT LISTENERS & BINDINGS
    ========================================================================== */
 function attachEventListeners() {
-  const bind = (id, obj, key) => {
+  const bindInput = (id, path) => {
     const el = document.getElementById(id);
     if (el) {
       el.addEventListener("input", e => {
-        obj[key] = e.target.value;
+        setCvStatePath(path, e.target.value);
         updateLivePreview();
+        autoSaveDraft();
       });
     }
   };
 
-  bind("inpName", cvState.personalInfo, "fullName");
-  bind("inpSpec", cvState.personalInfo, "specialization");
-  bind("inpAddress", cvState.personalInfo, "address");
-  bind("inpDob", cvState.personalInfo, "dob");
-  bind("inpAge", cvState.personalInfo, "age");
-  bind("inpPhone", cvState.personalInfo, "phone");
-  bind("inpEmail", cvState.personalInfo, "email");
+  // Bind Form Text Inputs
+  bindInput("inpName", "personalInfo.fullName");
+  bindInput("inpSpec", "personalInfo.specialization");
+  bindInput("inpAddress", "personalInfo.address");
+  bindInput("inpDob", "personalInfo.dob");
+  bindInput("inpAge", "personalInfo.age");
+  bindInput("inpPhone", "personalInfo.phone");
+  bindInput("inpEmail", "personalInfo.email");
 
-  bind("inpInternCompany", cvState.internship, "company");
-  bind("inpInternRole", cvState.internship, "role");
-  bind("inpInternPeriod", cvState.internship, "period");
+  bindInput("inpInternCompany", "internship.company");
+  bindInput("inpInternRole", "internship.role");
+  bindInput("inpInternPeriod", "internship.period");
 
-  bind("inpPlace", cvState.signatures, "place");
-  bind("inpDate", cvState.signatures, "date");
+  bindInput("inpPlace", "signatures.place");
+  bindInput("inpDate", "signatures.date");
+
+  // Helper for safe event attachment
+  const safeOn = (id, event, handler) => {
+    const el = document.getElementById(id);
+    if (el) el.addEventListener(event, handler);
+  };
 
   // Photo upload
-  document.getElementById("inpPhoto").addEventListener("change", e => {
-    const file = e.target.files[0];
+  safeOn("inpPhoto", "change", e => {
+    const file = e.target.files && e.target.files[0];
     if (file) {
       const reader = new FileReader();
       reader.onload = ev => {
         cvState.personalInfo.photoUrl = ev.target.result;
         updateLivePreview();
+        autoSaveDraft();
       };
       reader.readAsDataURL(file);
     }
   });
 
-  // Add buttons
-  document.getElementById("btnAddLanguage").addEventListener("click", addLanguage);
-  document.getElementById("btnAddAcademic").addEventListener("click", addAcademic);
-  document.getElementById("btnAddInternBullet").addEventListener("click", addInternBullet);
-  document.getElementById("btnAddResearchProj").addEventListener("click", addResearchProject);
-  document.getElementById("btnAddOtherProj").addEventListener("click", addOtherProject);
-  document.getElementById("btnAddCert").addEventListener("click", addCertification);
-  document.getElementById("btnAddResp").addEventListener("click", () => addSimpleListItem("responsibilities", "Active Member / Coordinator – Contributed to organizational initiatives."));
-  document.getElementById("btnAddExtra").addEventListener("click", () => addSimpleListItem("extraCurricular", "Participated in university sports competition or tournament."));
-  document.getElementById("btnAddHobby").addEventListener("click", () => addSimpleListItem("hobbies", "Sports: Actively engaged in athletic activities."));
+  // Dynamic Add buttons
+  safeOn("btnAddLanguage", "click", addLanguage);
+  safeOn("btnAddAcademic", "click", addAcademic);
+  safeOn("btnAddInternBullet", "click", addInternBullet);
+  safeOn("btnAddResearchProj", "click", addResearchProject);
+  safeOn("btnAddOtherProj", "click", addOtherProject);
+  safeOn("btnAddCert", "click", addCertification);
+  safeOn("btnAddResp", "click", () => addSimpleListItem("responsibilities", "Active Member / Coordinator – Contributed to organizational initiatives."));
+  safeOn("btnAddExtra", "click", () => addSimpleListItem("extraCurricular", "Participated in university sports competition or tournament."));
+  safeOn("btnAddHobby", "click", () => addSimpleListItem("hobbies", "Sports: Actively engaged in athletic activities."));
 
   // Header action buttons
-  document.getElementById("btnInstructions").addEventListener("click", () => openModal("instructionsModal"));
-  document.getElementById("btnAiCopilot").addEventListener("click", () => openModal("aiModal"));
-  document.getElementById("btnAiQuickFill").addEventListener("click", () => openModal("aiModal"));
-  document.getElementById("btnResetSample").addEventListener("click", resetToSampleData);
-  document.getElementById("btnSaveDraft").addEventListener("click", saveDraftToStorage);
+  safeOn("btnInstructions", "click", () => openModal("instructionsModal"));
+  safeOn("btnAiCopilot", "click", () => openModal("aiModal"));
+  safeOn("btnAiQuickFill", "click", () => openModal("aiModal"));
+  safeOn("btnResetSample", "click", resetToSampleData);
+  safeOn("btnSaveDraft", "click", saveDraftToStorage);
 
   // Word (.docx) Export
-  const btnWord = document.getElementById("btnExportWord");
-  if (btnWord) {
-    btnWord.addEventListener("click", exportWordDocx);
-  }
+  safeOn("btnExportWord", "click", exportWordDocx);
   
   // PDF Export and Print
-  const btnDownload = document.getElementById("btnDownloadPdf");
-  if (btnDownload) {
-    btnDownload.addEventListener("click", downloadDirectPdf);
-  }
-  document.getElementById("btnPrintPdf").addEventListener("click", () => window.print());
+  safeOn("btnDownloadPdf", "click", downloadDirectPdf);
+  safeOn("btnPrintPdf", "click", () => window.print());
 
   // Execute AI button
-  document.getElementById("btnExecuteAi").addEventListener("click", executeAiCopilot);
+  safeOn("btnExecuteAi", "click", executeAiCopilot);
+
+  // Enable direct in-place editing on the Live Preview sheet
+  attachPreviewDirectEditing();
 }
 
 /* Direct High-Fidelity PDF Download using html2pdf */
@@ -1760,9 +1975,13 @@ async function exportWordDocx() {
 }
 
 /* Accordion card toggle */
-function toggleCard(headerEl) {
-  const body = headerEl.nextElementSibling;
-  const arrow = headerEl.querySelector("span");
+function toggleCard(el) {
+  if (!el) return;
+  const card = el.closest ? el.closest(".form-card") : null;
+  if (!card) return;
+  const body = card.querySelector(".card-body");
+  const arrow = card.querySelector(".card-header span:last-child");
+  if (!body) return;
   if (body.style.display === "none") {
     body.style.display = "flex";
     if (arrow) arrow.innerText = "▼";
@@ -1771,15 +1990,20 @@ function toggleCard(headerEl) {
     if (arrow) arrow.innerText = "▶";
   }
 }
+window.toggleCard = toggleCard;
 
 /* Modals */
 function openModal(id) {
-  document.getElementById(id).classList.add("active");
+  const el = document.getElementById(id);
+  if (el) el.classList.add("active");
 }
+window.openModal = openModal;
 
 function closeModal(id) {
-  document.getElementById(id).classList.remove("active");
+  const el = document.getElementById(id);
+  if (el) el.classList.remove("active");
 }
+window.closeModal = closeModal;
 
 /* ==========================================================================
    OPENROUTER AI INTEGRATION
@@ -1880,3 +2104,45 @@ ${cvState.responsibilities.join("\n")}`;
     btn.disabled = false;
   }
 }
+
+// Expose all functions to window for HTML inline handlers and converter.js
+window.cvState = cvState;
+window.SAMPLE_CV_DATA = SAMPLE_CV_DATA;
+window.ensureCvStateIntegrity = ensureCvStateIntegrity;
+window.loadDraftFromStorage = loadDraftFromStorage;
+window.saveDraftToStorage = saveDraftToStorage;
+window.resetToSampleData = resetToSampleData;
+window.populateFormFields = populateFormFields;
+window.renderDynamicFormItems = renderDynamicFormItems;
+window.syncSectionVisibilityUI = syncSectionVisibilityUI;
+window.updateLivePreview = updateLivePreview;
+window.toggleSection = toggleSection;
+window.toggleCard = toggleCard;
+window.openModal = openModal;
+window.closeModal = closeModal;
+window.updateLanguageField = updateLanguageField;
+window.addLanguage = addLanguage;
+window.removeLanguage = removeLanguage;
+window.updateAcademicField = updateAcademicField;
+window.addAcademic = addAcademic;
+window.removeAcademic = removeAcademic;
+window.updateInternBullet = updateInternBullet;
+window.addInternBullet = addInternBullet;
+window.removeInternBullet = removeInternBullet;
+window.updateResearchProjTitle = updateResearchProjTitle;
+window.updateResearchProjBullet = updateResearchProjBullet;
+window.addResearchProject = addResearchProject;
+window.removeResearchProject = removeResearchProject;
+window.updateOtherProjTitle = updateOtherProjTitle;
+window.updateOtherProjBullet = updateOtherProjBullet;
+window.addOtherProject = addOtherProject;
+window.removeOtherProject = removeOtherProject;
+window.updateCertTitle = updateCertTitle;
+window.updateCertBullet = updateCertBullet;
+window.addCertification = addCertification;
+window.removeCertification = removeCertification;
+window.updateSimpleListItem = updateSimpleListItem;
+window.addSimpleListItem = addSimpleListItem;
+window.removeSimpleListItem = removeSimpleListItem;
+window.exportWordDocx = exportWordDocx;
+window.downloadDirectPdf = downloadDirectPdf;

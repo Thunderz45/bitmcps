@@ -137,6 +137,15 @@ const SAMPLE_CV_DATA = {
   signatures: {
     place: "PUNE",
     date: ""
+  },
+  sectionVisibility: {
+    summerInternship: true,
+    researchProjects: true,
+    otherProjects: true,
+    certifications: true,
+    responsibilities: true,
+    extraCurricular: true,
+    hobbies: true
   }
 };
 
@@ -148,6 +157,7 @@ document.addEventListener("DOMContentLoaded", () => {
   loadDraftFromStorage();
   populateFormFields();
   renderDynamicFormItems();
+  syncSectionVisibilityUI();
   updateLivePreview();
   attachEventListeners();
 });
@@ -165,6 +175,17 @@ function loadDraftFromStorage() {
   if (saved) {
     try {
       cvState = JSON.parse(saved);
+      if (!cvState.sectionVisibility) {
+        cvState.sectionVisibility = {
+          summerInternship: true,
+          researchProjects: true,
+          otherProjects: true,
+          certifications: true,
+          responsibilities: true,
+          extraCurricular: true,
+          hobbies: true
+        };
+      }
     } catch (e) {
       console.warn("Could not parse saved draft, using default sample.");
     }
@@ -177,8 +198,106 @@ function resetToSampleData() {
     localStorage.removeItem("bitm_official_cv_draft");
     populateFormFields();
     renderDynamicFormItems();
+    syncSectionVisibilityUI();
     updateLivePreview();
   }
+}
+
+/* ==========================================================================
+   SECTION VISIBILITY TOGGLE (FRESHERS / OPTIONAL SECTIONS)
+   ========================================================================== */
+function toggleSection(key) {
+  if (!cvState.sectionVisibility) {
+    cvState.sectionVisibility = {
+      summerInternship: true,
+      researchProjects: true,
+      otherProjects: true,
+      certifications: true,
+      responsibilities: true,
+      extraCurricular: true,
+      hobbies: true
+    };
+  }
+  cvState.sectionVisibility[key] = !cvState.sectionVisibility[key];
+  syncSectionVisibilityUI();
+  updateLivePreview();
+  try {
+    localStorage.setItem("bitm_official_cv_draft", JSON.stringify(cvState));
+  } catch (e) {}
+}
+window.toggleSection = toggleSection;
+
+function syncSectionVisibilityUI() {
+  if (!cvState.sectionVisibility) return;
+
+  // 1. Summer Internship (Card 4) - Prime toggle for Freshers
+  const isInternVisible = cvState.sectionVisibility.summerInternship !== false;
+  const btnIntern = document.getElementById("btnToggleInternship");
+  const noticeIntern = document.getElementById("noticeInternshipExcluded");
+  const groupIntern = document.getElementById("internshipFieldsGroup");
+  if (btnIntern) {
+    btnIntern.innerHTML = isInternVisible ? "🗑️ Remove Section (Freshers)" : "➕ Restore Summer Internship";
+    btnIntern.style.background = isInternVisible ? "#fee2e2" : "#dcfce7";
+    btnIntern.style.color = isInternVisible ? "#ef4444" : "#16a34a";
+    btnIntern.style.borderColor = isInternVisible ? "#fca5a5" : "#86efac";
+  }
+  if (noticeIntern) noticeIntern.style.display = isInternVisible ? "none" : "block";
+  if (groupIntern) groupIntern.style.display = isInternVisible ? "block" : "none";
+
+  // 2. Research Projects
+  const isResearchVisible = cvState.sectionVisibility.researchProjects !== false;
+  const btnResearch = document.getElementById("btnToggleResearchProj");
+  const groupResearch = document.getElementById("researchSectionGroup");
+  if (btnResearch) {
+    btnResearch.innerHTML = isResearchVisible ? "Hide Research Projects" : "➕ Show Research Projects";
+  }
+  if (groupResearch) groupResearch.style.display = isResearchVisible ? "block" : "none";
+
+  // 3. Certifications
+  const isCertVisible = cvState.sectionVisibility.certifications !== false;
+  const btnCert = document.getElementById("btnToggleCertifications");
+  const noticeCert = document.getElementById("noticeCertificationsExcluded");
+  const contCert = document.getElementById("certificationsContainer");
+  const btnAddCert = document.getElementById("btnAddCert");
+  if (btnCert) {
+    btnCert.innerHTML = isCertVisible ? "Hide Section" : "➕ Restore Certifications";
+  }
+  if (noticeCert) noticeCert.style.display = isCertVisible ? "none" : "block";
+  if (contCert) contCert.style.display = isCertVisible ? "flex" : "none";
+  if (btnAddCert) btnAddCert.style.display = isCertVisible ? "inline-block" : "none";
+
+  // 4. Responsibilities
+  const isRespVisible = cvState.sectionVisibility.responsibilities !== false;
+  const btnResp = document.getElementById("btnToggleResponsibilities");
+  const noticeResp = document.getElementById("noticeResponsibilitiesExcluded");
+  const contResp = document.getElementById("responsibilitiesContainer");
+  const btnAddResp = document.getElementById("btnAddResp");
+  if (btnResp) btnResp.innerHTML = isRespVisible ? "Hide Section" : "➕ Restore Section";
+  if (noticeResp) noticeResp.style.display = isRespVisible ? "none" : "block";
+  if (contResp) contResp.style.display = isRespVisible ? "flex" : "none";
+  if (btnAddResp) btnAddResp.style.display = isRespVisible ? "inline-block" : "none";
+
+  // 5. Extra-Curricular
+  const isExtraVisible = cvState.sectionVisibility.extraCurricular !== false;
+  const btnExtra = document.getElementById("btnToggleExtra");
+  const noticeExtra = document.getElementById("noticeExtraExcluded");
+  const contExtra = document.getElementById("extraCurricularContainer");
+  const btnAddExtra = document.getElementById("btnAddExtra");
+  if (btnExtra) btnExtra.innerHTML = isExtraVisible ? "Hide Section" : "➕ Restore Section";
+  if (noticeExtra) noticeExtra.style.display = isExtraVisible ? "none" : "block";
+  if (contExtra) contExtra.style.display = isExtraVisible ? "flex" : "none";
+  if (btnAddExtra) btnAddExtra.style.display = isExtraVisible ? "inline-block" : "none";
+
+  // 6. Hobbies
+  const isHobbiesVisible = cvState.sectionVisibility.hobbies !== false;
+  const btnHobbies = document.getElementById("btnToggleHobbies");
+  const noticeHobbies = document.getElementById("noticeHobbiesExcluded");
+  const contHobbies = document.getElementById("hobbiesContainer");
+  const btnAddHobby = document.getElementById("btnAddHobby");
+  if (btnHobbies) btnHobbies.innerHTML = isHobbiesVisible ? "Hide Section" : "➕ Restore Section";
+  if (noticeHobbies) noticeHobbies.style.display = isHobbiesVisible ? "none" : "block";
+  if (contHobbies) contHobbies.style.display = isHobbiesVisible ? "flex" : "none";
+  if (btnAddHobby) btnAddHobby.style.display = isHobbiesVisible ? "inline-block" : "none";
 }
 
 /* ==========================================================================
@@ -703,6 +822,38 @@ function updateLivePreview() {
     li.innerText = h;
     hobCont.appendChild(li);
   });
+
+  // Section Visibility Toggles in Live Preview
+  const vis = cvState.sectionVisibility || {};
+  const prevInternTable = document.getElementById("prevInternshipTable");
+  if (prevInternTable) {
+    prevInternTable.style.display = (vis.summerInternship !== false) ? "table" : "none";
+  }
+
+  const prevResearchRow = document.getElementById("prevResearchProjectsRow");
+  if (prevResearchRow) {
+    prevResearchRow.style.display = (vis.researchProjects !== false) ? "table-row" : "none";
+  }
+
+  const prevCertTable = document.getElementById("prevCertificationsTable");
+  if (prevCertTable) {
+    prevCertTable.style.display = (vis.certifications !== false) ? "table" : "none";
+  }
+
+  const prevRespTable = document.getElementById("prevResponsibilitiesTable");
+  if (prevRespTable) {
+    prevRespTable.style.display = (vis.responsibilities !== false) ? "table" : "none";
+  }
+
+  const prevExtraTable = document.getElementById("prevExtraCurricularTable");
+  if (prevExtraTable) {
+    prevExtraTable.style.display = (vis.extraCurricular !== false) ? "table" : "none";
+  }
+
+  const prevHobbiesTable = document.getElementById("prevHobbiesTable");
+  if (prevHobbiesTable) {
+    prevHobbiesTable.style.display = (vis.hobbies !== false) ? "table" : "none";
+  }
 }
 
 /* ==========================================================================
@@ -764,6 +915,12 @@ function attachEventListeners() {
   document.getElementById("btnAiQuickFill").addEventListener("click", () => openModal("aiModal"));
   document.getElementById("btnResetSample").addEventListener("click", resetToSampleData);
   document.getElementById("btnSaveDraft").addEventListener("click", saveDraftToStorage);
+
+  // Word (.docx) Export
+  const btnWord = document.getElementById("btnExportWord");
+  if (btnWord) {
+    btnWord.addEventListener("click", exportWordDocx);
+  }
   
   // PDF Export and Print
   const btnDownload = document.getElementById("btnDownloadPdf");
@@ -843,6 +1000,762 @@ function downloadDirectPdf() {
     btn.innerHTML = originalHtml;
     btn.disabled = false;
     window.print();
+  }
+}
+
+/* ==========================================================================
+   OFFICIAL WORD (.DOCX) EXPORT GENERATOR
+   Exact duplicate of b cv u (1).pdf and CV format-Freshers (5).docx
+   Produces 100% genuine .docx matching all BITM Placement Rules
+   ========================================================================== */
+async function exportWordDocx() {
+  const btn = document.getElementById("btnExportWord");
+  const originalHtml = btn ? btn.innerHTML : "📄 Export Word (.docx)";
+  if (btn) {
+    btn.innerHTML = "⏳ Generating .docx...";
+    btn.disabled = true;
+  }
+
+  try {
+    if (typeof window.docx === "undefined") {
+      throw new Error("Word docx generator library is not loaded. Please refresh the page.");
+    }
+
+    const {
+      Document, Paragraph, TextRun, Table, TableRow, TableCell,
+      WidthType, AlignmentType, BorderStyle, HeadingLevel, ImageRun, Packer, PageBreak
+    } = window.docx;
+
+    const cellBorder = {
+      top: { style: BorderStyle.SINGLE, size: 4, color: "000000" },
+      bottom: { style: BorderStyle.SINGLE, size: 4, color: "000000" },
+      left: { style: BorderStyle.SINGLE, size: 4, color: "000000" },
+      right: { style: BorderStyle.SINGLE, size: 4, color: "000000" }
+    };
+
+    const noBorder = {
+      top: { style: BorderStyle.NONE, size: 0, color: "FFFFFF" },
+      bottom: { style: BorderStyle.NONE, size: 0, color: "FFFFFF" },
+      left: { style: BorderStyle.NONE, size: 0, color: "FFFFFF" },
+      right: { style: BorderStyle.NONE, size: 0, color: "FFFFFF" }
+    };
+
+    const padCell = { top: 60, bottom: 60, left: 100, right: 100 };
+
+    function createBannerRow(titleText, colSpan = 1, isLeft = false) {
+      return new TableRow({
+        children: [
+          new TableCell({
+            columnSpan: colSpan,
+            shading: { fill: "0E3860" },
+            borders: cellBorder,
+            margins: { top: 80, bottom: 80, left: 120, right: 120 },
+            children: [
+              new Paragraph({
+                alignment: isLeft ? AlignmentType.LEFT : AlignmentType.CENTER,
+                spacing: { before: 0, after: 0 },
+                children: [
+                  new TextRun({
+                    text: titleText,
+                    bold: true,
+                    color: "FFFFFF",
+                    font: "Arial",
+                    size: 22
+                  })
+                ]
+              })
+            ]
+          })
+        ]
+      });
+    }
+
+    // 1. Prepare Letterhead Image
+    let headerImageRun = null;
+    try {
+      const resp = await fetch("bitm_header.jpg");
+      if (resp.ok) {
+        const buf = await resp.arrayBuffer();
+        headerImageRun = new ImageRun({
+          data: new Uint8Array(buf),
+          transformation: { width: 595, height: 74 }
+        });
+      }
+    } catch (e) {
+      console.warn("Could not load header image for Word export:", e);
+    }
+
+    // 2. Prepare Student Photo
+    let photoImageRun = null;
+    const photoUrl = cvState.personalInfo.photoUrl || "sample_photo.jpg";
+    try {
+      if (photoUrl.startsWith("data:image")) {
+        const base64Data = photoUrl.split(",")[1];
+        const binaryStr = atob(base64Data);
+        const bytes = new Uint8Array(binaryStr.length);
+        for (let i = 0; i < binaryStr.length; i++) {
+          bytes[i] = binaryStr.charCodeAt(i);
+        }
+        photoImageRun = new ImageRun({
+          data: bytes,
+          transformation: { width: 90, height: 110 }
+        });
+      } else {
+        const resp = await fetch(photoUrl);
+        if (resp.ok) {
+          const buf = await resp.arrayBuffer();
+          photoImageRun = new ImageRun({
+            data: new Uint8Array(buf),
+            transformation: { width: 90, height: 110 }
+          });
+        }
+      }
+    } catch (e) {
+      console.warn("Could not load student photo for Word export:", e);
+    }
+
+    const docChildren = [];
+
+    // Official BITM Header
+    if (headerImageRun) {
+      docChildren.push(
+        new Paragraph({
+          alignment: AlignmentType.CENTER,
+          spacing: { before: 0, after: 120 },
+          children: [headerImageRun]
+        })
+      );
+    } else {
+      docChildren.push(
+        new Paragraph({
+          alignment: AlignmentType.CENTER,
+          spacing: { before: 0, after: 40 },
+          children: [
+            new TextRun({
+              text: "BALAJI INSTITUTE OF TELECOM AND MANAGEMENT (BITM)",
+              bold: true,
+              font: "Arial",
+              size: 24,
+              color: "0E3860"
+            })
+          ]
+        }),
+        new Paragraph({
+          alignment: AlignmentType.CENTER,
+          spacing: { before: 0, after: 120 },
+          children: [
+            new TextRun({
+              text: "Survey No. 55/2-7, Tathawade, Pune 411033",
+              font: "Arial",
+              size: 18,
+              color: "64748B"
+            })
+          ]
+        })
+      );
+    }
+
+    // 1. Personal Information Table
+    const p = cvState.personalInfo;
+    const tablePersonalInfo = new Table({
+      width: { size: 100, type: WidthType.PERCENTAGE },
+      rows: [
+        createBannerRow("PERSONAL INFORMATION", 5),
+        // Row 1: Name & MBA Specialization + Photo (rowSpan 4)
+        new TableRow({
+          children: [
+            new TableCell({
+              width: { size: 1257, type: WidthType.DXA },
+              borders: cellBorder,
+              margins: padCell,
+              children: [new Paragraph({ alignment: AlignmentType.CENTER, children: [new TextRun({ text: "Name", bold: true, font: "Arial", size: 22 })] })]
+            }),
+            new TableCell({
+              columnSpan: 3,
+              width: { size: 6795, type: WidthType.DXA },
+              borders: cellBorder,
+              margins: padCell,
+              children: [
+                new Paragraph({
+                  children: [
+                    new TextRun({ text: (p.fullName || "Student Name") + "   ", bold: true, font: "Arial", size: 28 }),
+                    new TextRun({ text: `MBA - ${p.specialization || ""}`, bold: true, font: "Arial", size: 22 })
+                  ]
+                })
+              ]
+            }),
+            new TableCell({
+              rowSpan: 4,
+              width: { size: 1948, type: WidthType.DXA },
+              borders: cellBorder,
+              margins: padCell,
+              children: [
+                new Paragraph({
+                  alignment: AlignmentType.CENTER,
+                  children: photoImageRun ? [photoImageRun] : [new TextRun({ text: "[Photo]", font: "Arial", size: 18 })]
+                })
+              ]
+            })
+          ]
+        }),
+        // Row 2: Permanent address
+        new TableRow({
+          children: [
+            new TableCell({
+              borders: cellBorder,
+              margins: padCell,
+              children: [new Paragraph({ alignment: AlignmentType.CENTER, children: [new TextRun({ text: "Permanent\naddress", bold: true, font: "Arial", size: 22 })] })]
+            }),
+            new TableCell({
+              columnSpan: 3,
+              borders: cellBorder,
+              margins: padCell,
+              children: [new Paragraph({ children: [new TextRun({ text: p.address || "", font: "Arial", size: 22 })] })]
+            })
+          ]
+        }),
+        // Row 3: DOB & AGE
+        new TableRow({
+          children: [
+            new TableCell({
+              borders: cellBorder,
+              margins: padCell,
+              children: [new Paragraph({ alignment: AlignmentType.CENTER, children: [new TextRun({ text: "DOB", font: "Arial", size: 22 })] })]
+            }),
+            new TableCell({
+              borders: cellBorder,
+              margins: padCell,
+              children: [new Paragraph({ children: [new TextRun({ text: p.dob || "", font: "Arial", size: 22 })] })]
+            }),
+            new TableCell({
+              borders: cellBorder,
+              margins: padCell,
+              children: [new Paragraph({ alignment: AlignmentType.CENTER, children: [new TextRun({ text: "AGE", font: "Arial", size: 22 })] })]
+            }),
+            new TableCell({
+              borders: cellBorder,
+              margins: padCell,
+              children: [new Paragraph({ children: [new TextRun({ text: p.age || "", font: "Arial", size: 22 })] })]
+            })
+          ]
+        }),
+        // Row 4: Phone & Email
+        new TableRow({
+          children: [
+            new TableCell({
+              borders: cellBorder,
+              margins: padCell,
+              children: [new Paragraph({ alignment: AlignmentType.CENTER, children: [new TextRun({ text: "Phone", font: "Arial", size: 22 })] })]
+            }),
+            new TableCell({
+              borders: cellBorder,
+              margins: padCell,
+              children: [new Paragraph({ children: [new TextRun({ text: p.phone || "", font: "Arial", size: 22 })] })]
+            }),
+            new TableCell({
+              borders: cellBorder,
+              margins: padCell,
+              children: [new Paragraph({ alignment: AlignmentType.CENTER, children: [new TextRun({ text: "Email", font: "Arial", size: 22 })] })]
+            }),
+            new TableCell({
+              borders: cellBorder,
+              margins: padCell,
+              children: [new Paragraph({ children: [new TextRun({ text: p.email || "", font: "Arial", size: 22, color: "0000EE", underline: {} })] })]
+            })
+          ]
+        })
+      ]
+    });
+    docChildren.push(tablePersonalInfo);
+    docChildren.push(new Paragraph({ spacing: { before: 40, after: 40 }, children: [] }));
+
+    // 2. Languages Known Table
+    const langRows = [
+      createBannerRow("LANGUAGES KNOWN", 4),
+      new TableRow({
+        children: [
+          new TableCell({ borders: cellBorder, margins: padCell, width: { size: 2363, type: WidthType.DXA }, children: [new Paragraph({ alignment: AlignmentType.CENTER, children: [new TextRun({ text: "Languages", bold: true, font: "Arial", size: 22 })] })] }),
+          new TableCell({ borders: cellBorder, margins: padCell, width: { size: 2623, type: WidthType.DXA }, children: [new Paragraph({ alignment: AlignmentType.CENTER, children: [new TextRun({ text: "Speak", bold: true, font: "Arial", size: 22 })] })] }),
+          new TableCell({ borders: cellBorder, margins: padCell, width: { size: 2623, type: WidthType.DXA }, children: [new Paragraph({ alignment: AlignmentType.CENTER, children: [new TextRun({ text: "Read", bold: true, font: "Arial", size: 22 })] })] }),
+          new TableCell({ borders: cellBorder, margins: padCell, width: { size: 2390, type: WidthType.DXA }, children: [new Paragraph({ alignment: AlignmentType.CENTER, children: [new TextRun({ text: "Write", bold: true, font: "Arial", size: 22 })] })] })
+        ]
+      })
+    ];
+
+    cvState.languages.forEach(l => {
+      langRows.push(
+        new TableRow({
+          children: [
+            new TableCell({ borders: cellBorder, margins: padCell, children: [new Paragraph({ children: [new TextRun({ text: l.language, font: "Arial", size: 22 })] })] }),
+            new TableCell({ borders: cellBorder, margins: padCell, children: [new Paragraph({ alignment: AlignmentType.CENTER, children: [new TextRun({ text: l.speak ? "✓" : "", bold: true, font: "Arial", size: 22 })] })] }),
+            new TableCell({ borders: cellBorder, margins: padCell, children: [new Paragraph({ alignment: AlignmentType.CENTER, children: [new TextRun({ text: l.read ? "✓" : "", bold: true, font: "Arial", size: 22 })] })] }),
+            new TableCell({ borders: cellBorder, margins: padCell, children: [new Paragraph({ alignment: AlignmentType.CENTER, children: [new TextRun({ text: l.write ? "✓" : "", bold: true, font: "Arial", size: 22 })] })] })
+          ]
+        })
+      );
+    });
+
+    const tableLanguages = new Table({
+      width: { size: 100, type: WidthType.PERCENTAGE },
+      rows: langRows
+    });
+    docChildren.push(tableLanguages);
+    docChildren.push(new Paragraph({ spacing: { before: 40, after: 40 }, children: [] }));
+
+    // 3. Academic Details Table
+    const acadRows = [
+      createBannerRow("ACADEMIC DETAILS", 6),
+      new TableRow({
+        children: [
+          new TableCell({ borders: cellBorder, margins: padCell, width: { size: 1679, type: WidthType.DXA }, children: [new Paragraph({ children: [new TextRun({ text: "Degree", bold: true, font: "Arial", size: 22 })] })] }),
+          new TableCell({ borders: cellBorder, margins: padCell, width: { size: 1690, type: WidthType.DXA }, children: [new Paragraph({ children: [new TextRun({ text: "Stream", bold: true, font: "Arial", size: 22 })] })] }),
+          new TableCell({ borders: cellBorder, margins: padCell, width: { size: 1806, type: WidthType.DXA }, children: [new Paragraph({ children: [new TextRun({ text: "University/Board", bold: true, font: "Arial", size: 22 })] })] }),
+          new TableCell({ borders: cellBorder, margins: padCell, width: { size: 2586, type: WidthType.DXA }, children: [new Paragraph({ children: [new TextRun({ text: "Institute", bold: true, font: "Arial", size: 22 })] })] }),
+          new TableCell({ borders: cellBorder, margins: padCell, width: { size: 921, type: WidthType.DXA }, children: [new Paragraph({ alignment: AlignmentType.CENTER, children: [new TextRun({ text: "Year", bold: true, font: "Arial", size: 22 })] })] }),
+          new TableCell({ borders: cellBorder, margins: padCell, width: { size: 1317, type: WidthType.DXA }, children: [new Paragraph({ alignment: AlignmentType.CENTER, children: [new TextRun({ text: "(%/GPA)", bold: true, font: "Arial", size: 22 })] })] })
+        ]
+      })
+    ];
+
+    cvState.academics.forEach(a => {
+      acadRows.push(
+        new TableRow({
+          children: [
+            new TableCell({ borders: cellBorder, margins: padCell, children: [new Paragraph({ children: [new TextRun({ text: a.degree, font: "Arial", size: 22 })] })] }),
+            new TableCell({ borders: cellBorder, margins: padCell, children: [new Paragraph({ children: [new TextRun({ text: a.stream, font: "Arial", size: 22 })] })] }),
+            new TableCell({ borders: cellBorder, margins: padCell, children: [new Paragraph({ children: [new TextRun({ text: a.university, font: "Arial", size: 22 })] })] }),
+            new TableCell({ borders: cellBorder, margins: padCell, children: [new Paragraph({ children: [new TextRun({ text: a.institute, font: "Arial", size: 22 })] })] }),
+            new TableCell({ borders: cellBorder, margins: padCell, children: [new Paragraph({ alignment: AlignmentType.CENTER, children: [new TextRun({ text: a.year, font: "Arial", size: 22 })] })] }),
+            new TableCell({ borders: cellBorder, margins: padCell, children: [new Paragraph({ alignment: AlignmentType.CENTER, children: [new TextRun({ text: a.percentage, font: "Arial", size: 22 })] })] })
+          ]
+        })
+      );
+    });
+
+    const tableAcademics = new Table({
+      width: { size: 100, type: WidthType.PERCENTAGE },
+      rows: acadRows
+    });
+    docChildren.push(tableAcademics);
+
+    // Academic Certification Text (Bottom of Academic Table)
+    docChildren.push(
+      new Paragraph({
+        spacing: { before: 80, after: 40 },
+        children: [
+          new TextRun({
+            text: "I certify that the marks mentioned in above table have been verified as correct.",
+            font: "Arial",
+            size: 22
+          })
+        ]
+      })
+    );
+
+    // Director Certification Row
+    const sigDateVal = cvState.signatures.date || "";
+    const acadDirectorTable = new Table({
+      width: { size: 100, type: WidthType.PERCENTAGE },
+      rows: [
+        new TableRow({
+          children: [
+            new TableCell({
+              borders: noBorder,
+              margins: { top: 40, bottom: 80, left: 0, right: 0 },
+              width: { size: 50, type: WidthType.PERCENTAGE },
+              children: [new Paragraph({ children: [new TextRun({ text: `DATE: ${sigDateVal}`, font: "Arial", size: 22 })] })]
+            }),
+            new TableCell({
+              borders: noBorder,
+              margins: { top: 40, bottom: 80, left: 0, right: 0 },
+              width: { size: 50, type: WidthType.PERCENTAGE },
+              children: [new Paragraph({ alignment: AlignmentType.RIGHT, children: [new TextRun({ text: "DIRECTOR", font: "Arial", size: 22 })] })]
+            })
+          ]
+        })
+      ]
+    });
+    docChildren.push(acadDirectorTable);
+
+    // 4. Summer Internship (Omitted cleanly if removed by Freshers)
+    const vis = cvState.sectionVisibility || {};
+    if (vis.summerInternship !== false) {
+      const internParas = [];
+      const company = cvState.internship.company || "";
+      const period = cvState.internship.period ? `| ${cvState.internship.period}` : "";
+      internParas.push(
+        new Paragraph({
+          spacing: { before: 40, after: 30 },
+          children: [
+            new TextRun({ text: `${company} ${period}`.trim(), bold: true, font: "Arial", size: 22 })
+          ]
+        })
+      );
+
+      if (cvState.internship.role) {
+        internParas.push(
+          new Paragraph({
+            spacing: { before: 0, after: 40 },
+            children: [
+              new TextRun({ text: cvState.internship.role, font: "Arial", size: 22 })
+            ]
+          })
+        );
+      }
+
+      cvState.internship.bullets.forEach(b => {
+        internParas.push(
+          new Paragraph({
+            bullet: { level: 0 },
+            spacing: { before: 20, after: 20 },
+            children: [new TextRun({ text: b, font: "Arial", size: 22 })]
+          })
+        );
+      });
+
+      const tableInternship = new Table({
+        width: { size: 100, type: WidthType.PERCENTAGE },
+        rows: [
+          createBannerRow("SUMMER INTERNSHIP:", 1, true),
+          new TableRow({
+            children: [
+              new TableCell({
+                borders: cellBorder,
+                margins: { top: 60, bottom: 60, left: 100, right: 100 },
+                children: internParas
+              })
+            ]
+          })
+        ]
+      });
+      docChildren.push(tableInternship);
+    }
+
+    // Page Break to Page 2
+    docChildren.push(new Paragraph({ children: [new PageBreak()] }));
+
+    // 5. KEY PROJECTS
+    const projectCells = [];
+    // Research Projects
+    if (vis.researchProjects !== false && cvState.projects.research.length > 0) {
+      const resParas = [
+        new Paragraph({
+          spacing: { before: 40, after: 40 },
+          children: [
+            new TextRun({ text: "Research Projects", bold: true, underline: {}, font: "Arial", size: 22 })
+          ]
+        })
+      ];
+      cvState.projects.research.forEach(rp => {
+        resParas.push(
+          new Paragraph({
+            spacing: { before: 40, after: 20 },
+            children: [new TextRun({ text: rp.title, bold: true, font: "Arial", size: 22 })]
+          })
+        );
+        rp.bullets.forEach(b => {
+          resParas.push(
+            new Paragraph({
+              bullet: { level: 0 },
+              spacing: { before: 20, after: 20 },
+              children: [new TextRun({ text: b, font: "Arial", size: 22 })]
+            })
+          );
+        });
+      });
+
+      projectCells.push(
+        new TableRow({
+          children: [
+            new TableCell({
+              borders: cellBorder,
+              margins: padCell,
+              children: resParas
+            })
+          ]
+        })
+      );
+    }
+
+    // Other Projects
+    if (cvState.projects.other.length > 0) {
+      const othParas = [
+        new Paragraph({
+          spacing: { before: 40, after: 40 },
+          children: [
+            new TextRun({ text: "Other Projects", bold: true, underline: {}, font: "Arial", size: 22 })
+          ]
+        })
+      ];
+      cvState.projects.other.forEach(op => {
+        othParas.push(
+          new Paragraph({
+            spacing: { before: 40, after: 20 },
+            children: [new TextRun({ text: op.title, bold: true, font: "Arial", size: 22 })]
+          })
+        );
+        op.bullets.forEach(b => {
+          othParas.push(
+            new Paragraph({
+              bullet: { level: 0 },
+              spacing: { before: 20, after: 20 },
+              children: [new TextRun({ text: b, font: "Arial", size: 22 })]
+            })
+          );
+        });
+      });
+
+      projectCells.push(
+        new TableRow({
+          children: [
+            new TableCell({
+              borders: cellBorder,
+              margins: padCell,
+              children: othParas
+            })
+          ]
+        })
+      );
+    }
+
+    if (projectCells.length > 0) {
+      const tableProjects = new Table({
+        width: { size: 100, type: WidthType.PERCENTAGE },
+        rows: [
+          createBannerRow("KEY PROJECTS", 1, false),
+          ...projectCells
+        ]
+      });
+      docChildren.push(tableProjects);
+      docChildren.push(new Paragraph({ spacing: { before: 40, after: 40 }, children: [] }));
+    }
+
+    // 6. CERTIFICATIONS (if visible)
+    if (vis.certifications !== false && cvState.certifications.length > 0) {
+      const certParas = [];
+      cvState.certifications.forEach(c => {
+        certParas.push(
+          new Paragraph({
+            spacing: { before: 30, after: 20 },
+            children: [new TextRun({ text: c.title, bold: true, font: "Arial", size: 22 })]
+          })
+        );
+        c.bullets.forEach(b => {
+          certParas.push(
+            new Paragraph({
+              bullet: { level: 0 },
+              spacing: { before: 20, after: 20 },
+              children: [new TextRun({ text: b, font: "Arial", size: 22 })]
+            })
+          );
+        });
+      });
+
+      const tableCert = new Table({
+        width: { size: 100, type: WidthType.PERCENTAGE },
+        rows: [
+          createBannerRow("CERTIFICATIONS", 1, false),
+          new TableRow({
+            children: [
+              new TableCell({
+                borders: cellBorder,
+                margins: padCell,
+                children: certParas
+              })
+            ]
+          })
+        ]
+      });
+      docChildren.push(tableCert);
+      docChildren.push(new Paragraph({ spacing: { before: 40, after: 40 }, children: [] }));
+    }
+
+    // 7. POSITION OF RESPONSIBILITY & ACHIEVEMENTS (if visible)
+    if (vis.responsibilities !== false && cvState.responsibilities.length > 0) {
+      const respParas = cvState.responsibilities.map(r => {
+        if (r.includes(" – ")) {
+          const parts = r.split(" – ");
+          return new Paragraph({
+            bullet: { level: 0 },
+            spacing: { before: 20, after: 20 },
+            children: [
+              new TextRun({ text: parts[0], bold: true, font: "Arial", size: 22 }),
+              new TextRun({ text: ` – ${parts.slice(1).join(" – ")}`, font: "Arial", size: 22 })
+            ]
+          });
+        }
+        return new Paragraph({
+          bullet: { level: 0 },
+          spacing: { before: 20, after: 20 },
+          children: [new TextRun({ text: r, font: "Arial", size: 22 })]
+        });
+      });
+
+      const tableResp = new Table({
+        width: { size: 100, type: WidthType.PERCENTAGE },
+        rows: [
+          createBannerRow("POSITION OF RESPONSIBILITY & ACHIEVEMENTS", 1, false),
+          new TableRow({
+            children: [
+              new TableCell({
+                borders: cellBorder,
+                margins: padCell,
+                children: respParas
+              })
+            ]
+          })
+        ]
+      });
+      docChildren.push(tableResp);
+      docChildren.push(new Paragraph({ spacing: { before: 40, after: 40 }, children: [] }));
+    }
+
+    // 8. EXTRA-CURRICULAR ACTIVITIES (if visible)
+    if (vis.extraCurricular !== false && cvState.extraCurricular.length > 0) {
+      const extraParas = cvState.extraCurricular.map(e => {
+        return new Paragraph({
+          bullet: { level: 0 },
+          spacing: { before: 20, after: 20 },
+          children: [new TextRun({ text: e, font: "Arial", size: 22 })]
+        });
+      });
+
+      const tableExtra = new Table({
+        width: { size: 100, type: WidthType.PERCENTAGE },
+        rows: [
+          createBannerRow("EXTRA-CURRICULAR ACTIVITIES", 1, false),
+          new TableRow({
+            children: [
+              new TableCell({
+                borders: cellBorder,
+                margins: padCell,
+                children: extraParas
+              })
+            ]
+          })
+        ]
+      });
+      docChildren.push(tableExtra);
+      docChildren.push(new Paragraph({ spacing: { before: 40, after: 40 }, children: [] }));
+    }
+
+    // 9. HOBBIES & INTERESTS (if visible)
+    if (vis.hobbies !== false && cvState.hobbies.length > 0) {
+      const hobbyParas = cvState.hobbies.map(h => {
+        return new Paragraph({
+          bullet: { level: 0 },
+          spacing: { before: 20, after: 20 },
+          children: [new TextRun({ text: h, font: "Arial", size: 22 })]
+        });
+      });
+
+      const tableHobbies = new Table({
+        width: { size: 100, type: WidthType.PERCENTAGE },
+        rows: [
+          createBannerRow("HOBBIES & INTERESTS", 1, false),
+          new TableRow({
+            children: [
+              new TableCell({
+                borders: cellBorder,
+                margins: padCell,
+                children: hobbyParas
+              })
+            ]
+          })
+        ]
+      });
+      docChildren.push(tableHobbies);
+    }
+
+    // 10. Bottom Signatures Block (Page 2)
+    docChildren.push(new Paragraph({ spacing: { before: 240, after: 0 }, children: [] }));
+
+    const placeVal = cvState.signatures.place || "PUNE";
+    const footerDateVal = cvState.signatures.date || "";
+
+    const tableSignatures = new Table({
+      width: { size: 100, type: WidthType.PERCENTAGE },
+      rows: [
+        new TableRow({
+          children: [
+            new TableCell({
+              borders: noBorder,
+              margins: { top: 60, bottom: 60, left: 0, right: 0 },
+              width: { size: 50, type: WidthType.PERCENTAGE },
+              children: [new Paragraph({ children: [new TextRun({ text: `DATE: ${footerDateVal}`, font: "Arial", size: 22 })] })]
+            }),
+            new TableCell({
+              borders: noBorder,
+              margins: { top: 60, bottom: 60, left: 0, right: 0 },
+              width: { size: 50, type: WidthType.PERCENTAGE },
+              children: [new Paragraph({ alignment: AlignmentType.RIGHT, children: [new TextRun({ text: "SIGNATURE OF STUDENT", font: "Arial", size: 22 })] })]
+            })
+          ]
+        }),
+        new TableRow({
+          children: [
+            new TableCell({
+              columnSpan: 2,
+              borders: noBorder,
+              margins: { top: 60, bottom: 60, left: 0, right: 0 },
+              children: [new Paragraph({ alignment: AlignmentType.CENTER, children: [new TextRun({ text: "COUNTERSIGNED", font: "Arial", size: 22 })] })]
+            })
+          ]
+        }),
+        new TableRow({
+          children: [
+            new TableCell({
+              borders: noBorder,
+              margins: { top: 60, bottom: 60, left: 0, right: 0 },
+              width: { size: 50, type: WidthType.PERCENTAGE },
+              children: [new Paragraph({ children: [new TextRun({ text: `PLACE: ${placeVal}`, font: "Arial", size: 22 })] })]
+            }),
+            new TableCell({
+              borders: noBorder,
+              margins: { top: 60, bottom: 60, left: 0, right: 0 },
+              width: { size: 50, type: WidthType.PERCENTAGE },
+              children: [new Paragraph({ alignment: AlignmentType.RIGHT, children: [new TextRun({ text: "STAMP & SIGNATURE OF DIRECTOR", font: "Arial", size: 22 })] })]
+            })
+          ]
+        })
+      ]
+    });
+    docChildren.push(tableSignatures);
+
+    // Build Word Document
+    const wordDoc = new Document({
+      sections: [{
+        properties: {
+          page: {
+            margin: { top: 720, bottom: 720, left: 720, right: 720 }
+          }
+        },
+        children: docChildren
+      }]
+    });
+
+    const blob = await Packer.toBlob(wordDoc);
+    const filename = `${(cvState.personalInfo.fullName || "Student_CV").trim().replace(/\\s+/g, "_")}_BITM_CV.docx`;
+    const downloadUrl = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = downloadUrl;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(downloadUrl);
+
+    if (btn) {
+      btn.innerHTML = originalHtml;
+      btn.disabled = false;
+    }
+  } catch (err) {
+    console.error("Word export error:", err);
+    alert("Could not generate Word document: " + err.message);
+    if (btn) {
+      btn.innerHTML = originalHtml;
+      btn.disabled = false;
+    }
   }
 }
 

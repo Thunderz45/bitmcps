@@ -6,6 +6,7 @@
   <title>BITM CPS - Official MBA CV Builder</title>
   <link rel="stylesheet" href="style.css">
   <script src="html2pdf.bundle.min.js"></script>
+  <script src="docx.umd.js"></script>
 </head>
 <body>
 
@@ -23,6 +24,7 @@
       <a href="index.html" class="btn btn-secondary">
         🏠 Home
       </a>
+
       <button type="button" class="btn btn-secondary" id="btnInstructions">
         📘 CV Instructions
       </button>
@@ -37,6 +39,11 @@
 
       <button type="button" class="btn btn-secondary" id="btnSaveDraft">
         💾 Save Draft
+      </button>
+
+      <!-- Export Word (.docx) Button -->
+      <button type="button" class="btn btn-secondary" id="btnExportWord" style="background:#2b579a; color:#fff; border-color:#2b579a;">
+        📄 Export Word (.docx)
       </button>
 
       <!-- Direct PDF Download & Print Buttons -->
@@ -155,57 +162,75 @@
         </div>
       </div>
 
-      <!-- Card 4: Summer Internship -->
-      <div class="form-card">
-        <div class="card-header" onclick="toggleCard(this)">
-          <div class="card-title">💼 4. Summer Internship</div>
-          <span>▼</span>
+      <!-- Card 4: Summer Internship (With Remove/Restore Section Button for Freshers) -->
+      <div class="form-card" id="cardInternship">
+        <div class="card-header" style="display:flex; justify-content:space-between; align-items:center;">
+          <div class="card-title" onclick="toggleCard(this.parentElement)">💼 4. Summer Internship</div>
+          <div style="display:flex; align-items:center; gap:8px;">
+            <button type="button" class="btn btn-sm" id="btnToggleInternship" style="background:#fee2e2; color:#ef4444; border:1px solid #fca5a5; font-weight:700;" onclick="toggleSection('summerInternship')">
+              🗑️ Remove Section (Freshers)
+            </button>
+            <span onclick="toggleCard(this.parentElement)">▼</span>
+          </div>
         </div>
         <div class="card-body">
-          <div class="form-row">
-            <div class="form-group">
-              <label>Company Name</label>
-              <input type="text" id="inpInternCompany" value="C3aLabs India Pvt Ltd" placeholder="Company Name">
-            </div>
-            <div class="form-group">
-              <label>Period / Date (Aligned on Right)</label>
-              <input type="text" id="inpInternPeriod" value="(Mar 2026)" placeholder="(e.g. Mar 2026)">
-            </div>
+          <div id="noticeInternshipExcluded" style="display:none; background:#fef3c7; border:1px solid #fde68a; color:#92400e; padding:8px 12px; border-radius:6px; font-size:0.78rem;">
+            ⚠️ <strong>Summer Internship is removed</strong> from your CV preview & export (ideal for Freshers). Click "Restore Section" above anytime to re-enable.
           </div>
 
-          <div class="form-group">
-            <label>Designation / Role</label>
-            <input type="text" id="inpInternRole" value="HR & Marketing Intern Using AI and Automation" placeholder="Internship Role">
-          </div>
-
-          <div class="form-group">
-            <label>Key Responsibilities & Deliverables (Bullet points)</label>
-            <div id="internBulletsContainer" style="display: flex; flex-direction: column; gap: 0.4rem;">
-              <!-- Generated via JS -->
+          <div id="internshipFieldsGroup">
+            <div class="form-row">
+              <div class="form-group">
+                <label>Company Name</label>
+                <input type="text" id="inpInternCompany" value="C3aLabs India Pvt Ltd" placeholder="Company Name">
+              </div>
+              <div class="form-group">
+                <label>Period / Date (Aligned on Right)</label>
+                <input type="text" id="inpInternPeriod" value="(Mar 2026)" placeholder="(e.g. Mar 2026)">
+              </div>
             </div>
-            <button type="button" class="btn btn-secondary btn-sm" id="btnAddInternBullet" style="align-self: flex-start; margin-top: 0.4rem;">
-              + Add Bullet Point
-            </button>
+
+            <div class="form-group">
+              <label>Designation / Role</label>
+              <input type="text" id="inpInternRole" value="HR & Marketing Intern Using AI and Automation" placeholder="Internship Role">
+            </div>
+
+            <div class="form-group">
+              <label>Key Responsibilities & Deliverables (Bullet points)</label>
+              <div id="internBulletsContainer" style="display: flex; flex-direction: column; gap: 0.4rem;">
+                <!-- Generated via JS -->
+              </div>
+              <button type="button" class="btn btn-secondary btn-sm" id="btnAddInternBullet" style="align-self: flex-start; margin-top: 0.4rem;">
+                + Add Bullet Point
+              </button>
+            </div>
           </div>
         </div>
       </div>
 
       <!-- Card 5: Key Projects -->
-      <div class="form-card">
-        <div class="card-header" onclick="toggleCard(this)">
-          <div class="card-title">🚀 5. Key Projects</div>
-          <span>▼</span>
+      <div class="form-card" id="cardProjects">
+        <div class="card-header" style="display:flex; justify-content:space-between; align-items:center;">
+          <div class="card-title" onclick="toggleCard(this.parentElement)">🚀 5. Key Projects</div>
+          <div style="display:flex; align-items:center; gap:8px;">
+            <button type="button" class="btn btn-sm btn-secondary" id="btnToggleResearchProj" style="font-size:0.7rem;" onclick="toggleSection('researchProjects')">
+              Hide Research Projects
+            </button>
+            <span onclick="toggleCard(this.parentElement)">▼</span>
+          </div>
         </div>
         <div class="card-body">
-          <h4 style="font-size: 0.82rem; color: #0e3860; border-bottom: 1px solid #e2e8f0; padding-bottom: 3px;">
-            Research Projects
-          </h4>
-          <div id="researchProjectsContainer" style="display: flex; flex-direction: column; gap: 0.5rem;">
-            <!-- Generated via JS -->
+          <div id="researchSectionGroup">
+            <h4 style="font-size: 0.82rem; color: #0e3860; border-bottom: 1px solid #e2e8f0; padding-bottom: 3px;">
+              Research Projects
+            </h4>
+            <div id="researchProjectsContainer" style="display: flex; flex-direction: column; gap: 0.5rem;">
+              <!-- Generated via JS -->
+            </div>
+            <button type="button" class="btn btn-secondary btn-sm" id="btnAddResearchProj" style="align-self: flex-start;">
+              + Add Research Project
+            </button>
           </div>
-          <button type="button" class="btn btn-secondary btn-sm" id="btnAddResearchProj" style="align-self: flex-start;">
-            + Add Research Project
-          </button>
 
           <h4 style="font-size: 0.82rem; color: #0e3860; border-bottom: 1px solid #e2e8f0; padding-bottom: 3px; margin-top: 0.75rem;">
             Other Projects
@@ -220,12 +245,20 @@
       </div>
 
       <!-- Card 6: Certifications -->
-      <div class="form-card">
-        <div class="card-header" onclick="toggleCard(this)">
-          <div class="card-title">📜 6. Certifications</div>
-          <span>▼</span>
+      <div class="form-card" id="cardCertifications">
+        <div class="card-header" style="display:flex; justify-content:space-between; align-items:center;">
+          <div class="card-title" onclick="toggleCard(this.parentElement)">📜 6. Certifications</div>
+          <div style="display:flex; align-items:center; gap:8px;">
+            <button type="button" class="btn btn-sm btn-secondary" id="btnToggleCertifications" style="font-size:0.7rem;" onclick="toggleSection('certifications')">
+              Hide Section
+            </button>
+            <span onclick="toggleCard(this.parentElement)">▼</span>
+          </div>
         </div>
         <div class="card-body">
+          <div id="noticeCertificationsExcluded" style="display:none; background:#fef3c7; border:1px solid #fde68a; color:#92400e; padding:8px 12px; border-radius:6px; font-size:0.78rem;">
+            ⚠️ <strong>Certifications section is removed</strong> from your CV. Click "Restore" above anytime to re-enable.
+          </div>
           <div id="certificationsContainer" style="display: flex; flex-direction: column; gap: 0.5rem;">
             <!-- Generated via JS -->
           </div>
@@ -236,12 +269,20 @@
       </div>
 
       <!-- Card 7: Positions of Responsibility & Achievements -->
-      <div class="form-card">
-        <div class="card-header" onclick="toggleCard(this)">
-          <div class="card-title">🏆 7. Position of Responsibility & Achievements</div>
-          <span>▼</span>
+      <div class="form-card" id="cardResponsibilities">
+        <div class="card-header" style="display:flex; justify-content:space-between; align-items:center;">
+          <div class="card-title" onclick="toggleCard(this.parentElement)">🏆 7. Position of Responsibility & Achievements</div>
+          <div style="display:flex; align-items:center; gap:8px;">
+            <button type="button" class="btn btn-sm btn-secondary" id="btnToggleResponsibilities" style="font-size:0.7rem;" onclick="toggleSection('responsibilities')">
+              Hide Section
+            </button>
+            <span onclick="toggleCard(this.parentElement)">▼</span>
+          </div>
         </div>
         <div class="card-body">
+          <div id="noticeResponsibilitiesExcluded" style="display:none; background:#fef3c7; border:1px solid #fde68a; color:#92400e; padding:8px 12px; border-radius:6px; font-size:0.78rem;">
+            ⚠️ <strong>Positions of Responsibility is removed</strong> from your CV.
+          </div>
           <div id="responsibilitiesContainer" style="display: flex; flex-direction: column; gap: 0.4rem;">
             <!-- Generated via JS -->
           </div>
@@ -252,12 +293,20 @@
       </div>
 
       <!-- Card 8: Extra-Curricular Activities -->
-      <div class="form-card">
-        <div class="card-header" onclick="toggleCard(this)">
-          <div class="card-title">⚽ 8. Extra-Curricular Activities</div>
-          <span>▼</span>
+      <div class="form-card" id="cardExtraCurricular">
+        <div class="card-header" style="display:flex; justify-content:space-between; align-items:center;">
+          <div class="card-title" onclick="toggleCard(this.parentElement)">⚽ 8. Extra-Curricular Activities</div>
+          <div style="display:flex; align-items:center; gap:8px;">
+            <button type="button" class="btn btn-sm btn-secondary" id="btnToggleExtra" style="font-size:0.7rem;" onclick="toggleSection('extraCurricular')">
+              Hide Section
+            </button>
+            <span onclick="toggleCard(this.parentElement)">▼</span>
+          </div>
         </div>
         <div class="card-body">
+          <div id="noticeExtraExcluded" style="display:none; background:#fef3c7; border:1px solid #fde68a; color:#92400e; padding:8px 12px; border-radius:6px; font-size:0.78rem;">
+            ⚠️ <strong>Extra-Curricular Activities section is removed</strong> from your CV.
+          </div>
           <div id="extraCurricularContainer" style="display: flex; flex-direction: column; gap: 0.4rem;">
             <!-- Generated via JS -->
           </div>
@@ -268,12 +317,20 @@
       </div>
 
       <!-- Card 9: Hobbies & Interests -->
-      <div class="form-card">
-        <div class="card-header" onclick="toggleCard(this)">
-          <div class="card-title">🎨 9. Hobbies & Interests</div>
-          <span>▼</span>
+      <div class="form-card" id="cardHobbies">
+        <div class="card-header" style="display:flex; justify-content:space-between; align-items:center;">
+          <div class="card-title" onclick="toggleCard(this.parentElement)">🎨 9. Hobbies & Interests</div>
+          <div style="display:flex; align-items:center; gap:8px;">
+            <button type="button" class="btn btn-sm btn-secondary" id="btnToggleHobbies" style="font-size:0.7rem;" onclick="toggleSection('hobbies')">
+              Hide Section
+            </button>
+            <span onclick="toggleCard(this.parentElement)">▼</span>
+          </div>
         </div>
         <div class="card-body">
+          <div id="noticeHobbiesExcluded" style="display:none; background:#fef3c7; border:1px solid #fde68a; color:#92400e; padding:8px 12px; border-radius:6px; font-size:0.78rem;">
+            ⚠️ <strong>Hobbies & Interests section is removed</strong> from your CV.
+          </div>
           <div id="hobbiesContainer" style="display: flex; flex-direction: column; gap: 0.4rem;">
             <!-- Generated via JS -->
           </div>
@@ -407,8 +464,8 @@
               <span>DIRECTOR</span>
             </div>
 
-            <!-- 4. SUMMER INTERNSHIP -->
-            <table class="cv-table">
+            <!-- 4. SUMMER INTERNSHIP (Can be removed by freshers) -->
+            <table class="cv-table" id="prevInternshipTable">
               <tr>
                 <th class="banner-cell text-left">SUMMER INTERNSHIP:</th>
               </tr>
@@ -443,11 +500,11 @@
           <div class="cv-page-frame">
 
             <!-- 5. KEY PROJECTS -->
-            <table class="cv-table">
+            <table class="cv-table" id="prevProjectsTable">
               <tr>
                 <th class="banner-cell">KEY PROJECTS</th>
               </tr>
-              <tr>
+              <tr id="prevResearchProjectsRow">
                 <td style="padding: 5px 8px; border-bottom: 1px solid #000;">
                   <div style="font-weight: bold; text-decoration: underline; margin-bottom: 3px;">Research Projects</div>
                   <div id="prevResearchProjects">
@@ -455,7 +512,7 @@
                   </div>
                 </td>
               </tr>
-              <tr>
+              <tr id="prevOtherProjectsRow">
                 <td style="padding: 5px 8px;">
                   <div style="font-weight: bold; text-decoration: underline; margin-bottom: 3px;">Other Projects</div>
                   <div id="prevOtherProjects">
@@ -466,7 +523,7 @@
             </table>
 
             <!-- 6. CERTIFICATIONS -->
-            <table class="cv-table">
+            <table class="cv-table" id="prevCertificationsTable">
               <tr>
                 <th class="banner-cell">CERTIFICATIONS</th>
               </tr>
@@ -480,7 +537,7 @@
             </table>
 
             <!-- 7. POSITION OF RESPONSIBILITY & ACHIVEMENTS -->
-            <table class="cv-table">
+            <table class="cv-table" id="prevResponsibilitiesTable">
               <tr>
                 <th class="banner-cell">POSITION OF RESPONSIBILITY & ACHIVEMENTS</th>
               </tr>
@@ -494,7 +551,7 @@
             </table>
 
             <!-- 8. EXTRA-CURRICULAR ACTIVITIES -->
-            <table class="cv-table">
+            <table class="cv-table" id="prevExtraCurricularTable">
               <tr>
                 <th class="banner-cell">EXTRA-CURRICULAR ACTIVITIES</th>
               </tr>
@@ -508,7 +565,7 @@
             </table>
 
             <!-- 9. HOBBIES & INTERESTS -->
-            <table class="cv-table">
+            <table class="cv-table" id="prevHobbiesTable">
               <tr>
                 <th class="banner-cell">HOBBIES & INTERESTS</th>
               </tr>

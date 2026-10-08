@@ -1,10 +1,13 @@
 /**
- * BITM CPS - Unformatted CV to Official Format AI Converter
- * Converts raw / unformatted resume text into 100% compliant BITM CV structure
+ * BITM CPS - PDF Resume to Official Placement CV Converter
+ * Extracts text directly from any uploaded unformatted PDF file
+ * Restructures & formats into 100% compliant BITM CV schema
  */
 
 const DEFAULT_KEY_B64 = "c2stb3ItdjEtZTYwNWYyZWNlZDc5YmVjZTM1NGM5ZTE1ZmIyMGZjOGRiM2M0YWY3ZGUxMDE3MGEzOTA2ZGRmM2ZmZTU5MDhkNw==";
 const OPENROUTER_API_KEY = localStorage.getItem("bitm_openrouter_key") || atob(DEFAULT_KEY_B64);
+
+let selectedPdfFile = null;
 
 // Modal Controls
 function openConvertModal() {
@@ -17,25 +20,46 @@ function closeConvertModal() {
   if (modal) modal.classList.remove("active");
 }
 
+// Extract full text from uploaded PDF file using PDF.js
+async function extractTextFromPdfFile(file) {
+  const pdfjs = window.pdfjsLib || window.pdfjs;
+  if (!pdfjs) {
+    throw new Error("PDF processing engine is loading. Please try again in 2 seconds.");
+  }
+  if (pdfjs.GlobalWorkerOptions) {
+    pdfjs.GlobalWorkerOptions.workerSrc = "pdf.worker.min.js";
+  }
+
+  const arrayBuffer = await file.arrayBuffer();
+  const loadingTask = pdfjs.getDocument({ data: new Uint8Array(arrayBuffer) });
+  const pdf = await loadingTask.promise;
+
+  let fullText = "";
+  for (let i = 1; i <= pdf.numPages; i++) {
+    const page = await pdf.getPage(i);
+    const content = await page.getTextContent();
+    const strings = content.items.map(item => item.str);
+    fullText += strings.join(" ") + "\n";
+  }
+
+  return fullText.trim();
+}
+
 // Fallback rule-based parser in case of offline/network issues
 function parseUnformattedCvFallback(text) {
   const lines = text.split("\n").map(l => l.trim()).filter(Boolean);
   
-  // Extract Name (first non-empty line)
   let name = lines[0] || "Student Name";
   if (name.toLowerCase().startsWith("name:")) {
     name = name.replace(/^name:\s*/i, "");
   }
 
-  // Extract Email
   const emailMatch = text.match(/[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/);
   const email = emailMatch ? emailMatch[0] : "";
 
-  // Extract Phone
   const phoneMatch = text.match(/(?:\+91|0)?[6-9]\d{9}/);
   const phone = phoneMatch ? phoneMatch[0] : "";
 
-  // Check internship
   const hasInternship = /internship|intern\b|c3alabs|trainee/i.test(text);
 
   return {
@@ -288,29 +312,127 @@ document.addEventListener("DOMContentLoaded", () => {
     btnOpen.addEventListener("click", openConvertModal);
   }
 
-  const btnConvert = document.getElementById("btnStartConvert");
+  // File Dropzone Handling
+  const dropzone = document.getElementById("pdfDropzone");
+  const fileInput = document.getElementById("pdfFileInput");
+  const selectedInfo = document.getElementById("selectedPdfInfo");
+  const selectedName = document.getElementById("selectedPdfName");
+  const btnClear = document.getElementById("btnClearSelectedPdf");
+  const btnConvert = document.getElementById("btnStartPdfConvert");
+  const statusDiv = document.getElementById("convertStatus");
+
+  function handleFileSelected(file) {
+    if (!file) return;
+    if (!file.name.toLowerCase().endsWith(".pdf") && file.type !== "application/pdf") {
+      alert("Please upload a PDF file (.pdf)");
+      return;
+    }
+    selectedPdfFile = file;
+    if (dropzone) dropzone.style.display = "none";
+    if (selectedInfo) selectedInfo.style.display = "flex";
+    if (selectedName) selectedName.innerHTML = `📄 ${file.name} (${(file.size / 1024).toFixed(1)} KB)`;
+    if (btnConvert) {
+      btnConvert.disabled = false;
+      btnConvert.innerHTML = `⚡ Convert "${file.name}" to Official Format`;
+    }
+  }
+
+  if (dropzone && fileInput) {
+    dropzone.addEventListener("click", () => fileInput.click());
+    fileInput.addEventListener("change", e => {
+      if (e.target.files && e.target.files[0]) {
+        handleFileSelected(e.target.files[0]);
+      }
+    });
+
+    // Drag & Drop
+    dropzone.addEventListener("dragover", e => {
+      e.preventDefault();
+      dropzone.classList.add("dragover");
+    });
+    dropzone.addEventListener("dragleave", () => {
+      dropzone.classList.remove("dragover");
+    });
+    dropzone.addEventListener("drop", e => {
+      e.preventDefault();
+      dropzone.classList.remove("dragover");
+      if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+        handleFileSelected(e.dataTransfer.files[0]);
+      }
+    });
+  }
+
+  if (btnClear) {
+    btnClear.addEventListener("click", () => {
+      selectedPdfFile = null;
+      if (fileInput) fileInput.value = "";
+      if (dropzone) dropzone.style.display = "flex";
+      if (selectedInfo) selectedInfo.style.display = "none";
+      if (btnConvert) {
+        btnConvert.disabled = true;
+        btnConvert.innerHTML = "⚡ Convert PDF to Official Format";
+      }
+      if (statusDiv) statusDiv.style.display = "none";
+    });
+  }
+
+  // Convert Button Click
   if (btnConvert) {
     btnConvert.addEventListener("click", async () => {
-      const txt = document.getElementById("rawCvInput")?.value?.trim();
-      const statusDiv = document.getElementById("convertStatus");
+      let rawText = "";
 
-      if (!txt) {
-        alert("Please paste your unformatted CV or resume text first.");
-        return;
+      // 1. If PDF is selected, extract text
+      if (selectedPdfFile) {
+        btnConvert.disabled = true;
+        btnConvert.innerHTML = "⏳ Reading PDF text...";
+        if (statusDiv) {
+          statusDiv.style.display = "block";
+          statusDiv.style.background = "#e0f2fe";
+          statusDiv.style.color = "#0369a1";
+          statusDiv.style.border = "1px solid #bae6fd";
+          statusDiv.innerHTML = "📄 Extracting text from uploaded PDF file...";
+        }
+
+        try {
+          rawText = await extractTextFromPdfFile(selectedPdfFile);
+          if (!rawText || rawText.length < 20) {
+            throw new Error("Could not extract readable text from PDF. It may be a scanned image or empty.");
+          }
+        } catch (err) {
+          console.error("PDF Extraction error:", err);
+          if (statusDiv) {
+            statusDiv.style.background = "#fee2e2";
+            statusDiv.style.color = "#991b1b";
+            statusDiv.style.border = "1px solid #fca5a5";
+            statusDiv.innerHTML = "PDF Extraction error: " + err.message;
+          }
+          btnConvert.disabled = false;
+          btnConvert.innerHTML = "⚡ Convert PDF to Official Format";
+          return;
+        }
+      } else {
+        // 2. Check if raw text was pasted
+        const txtArea = document.getElementById("rawCvInput");
+        if (txtArea && txtArea.value.trim()) {
+          rawText = txtArea.value.trim();
+        } else {
+          alert("Please upload a resume PDF file first.");
+          return;
+        }
       }
 
       btnConvert.disabled = true;
-      btnConvert.innerHTML = "⏳ Converting with AI...";
+      btnConvert.innerHTML = "⏳ Converting to Official BITM Format...";
       if (statusDiv) {
         statusDiv.style.display = "block";
         statusDiv.style.background = "#e0f2fe";
         statusDiv.style.color = "#0369a1";
         statusDiv.style.border = "1px solid #bae6fd";
-        statusDiv.innerHTML = "⚡ Reading unformatted CV and mapping to official BITM placement format...";
+        statusDiv.innerHTML = "⚡ AI is mapping your details to the official BITM placement template...";
       }
 
       try {
-        const formattedData = await convertUnformattedCv(txt);
+        const formattedData = await convertUnformattedCv(rawText);
         // Save to draft storage
         localStorage.setItem("bitm_official_cv_draft", JSON.stringify(formattedData));
 
@@ -318,7 +440,7 @@ document.addEventListener("DOMContentLoaded", () => {
           statusDiv.style.background = "#dcfce7";
           statusDiv.style.color = "#166534";
           statusDiv.style.border = "1px solid #86efac";
-          statusDiv.innerHTML = "✓ Successfully formatted! Opening in CV Builder...";
+          statusDiv.innerHTML = "✓ Successfully converted! Loading your official formatted CV...";
         }
 
         setTimeout(() => {
@@ -331,7 +453,7 @@ document.addEventListener("DOMContentLoaded", () => {
               updateLivePreview();
               closeConvertModal();
               btnConvert.disabled = false;
-              btnConvert.innerHTML = "⚡ Transform & Load into CV Builder";
+              btnConvert.innerHTML = "⚡ Convert PDF to Official Format";
               if (statusDiv) statusDiv.style.display = "none";
             } else {
               window.location.reload();
@@ -350,7 +472,7 @@ document.addEventListener("DOMContentLoaded", () => {
           statusDiv.innerHTML = "Error formatting CV: " + err.message;
         }
         btnConvert.disabled = false;
-        btnConvert.innerHTML = "⚡ Transform & Open in CV Builder";
+        btnConvert.innerHTML = "⚡ Convert PDF to Official Format";
       }
     });
   }

@@ -780,6 +780,44 @@ body {
   color: #94a3b8;
 }
 
+/* PDF Upload Dropzone */
+.pdf-upload-dropzone {
+  border: 2px dashed #93c5fd;
+  background: #f0f9ff;
+  border-radius: 12px;
+  padding: 2.5rem 1.5rem;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.pdf-upload-dropzone:hover, .pdf-upload-dropzone.dragover {
+  border-color: #0284c7;
+  background: #e0f2fe;
+  transform: scale(1.01);
+}
+
+.dropzone-icon {
+  font-size: 3.25rem;
+  line-height: 1;
+}
+
+.dropzone-text strong {
+  display: block;
+  font-size: 1.05rem;
+  color: #0e3860;
+  margin-bottom: 0.35rem;
+}
+
+.dropzone-text span {
+  font-size: 0.82rem;
+  color: #64748b;
+}
+
 /* ==========================================================================
    HOME PAGE (LANDING PORTAL) STYLES
    ========================================================================== */

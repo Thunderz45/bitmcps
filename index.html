@@ -3,352 +3,110 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>BITM CPS - Career Planning & Placement System | Sri Balaji University Pune</title>
+  <title>BITM CV Builder | Sri Balaji University Pune</title>
   <link rel="stylesheet" href="style.css">
 </head>
-<body>
+<body style="min-height: 100vh; display: flex; flex-direction: column; justify-content: space-between; background: #f8fafc;">
 
-  <!-- Top Navigation Header -->
+  <!-- Simple Header -->
   <header class="app-header">
     <div class="brand">
       <div class="brand-icon">🎓</div>
       <div>
-        <div class="brand-title">BITM CPS Portal</div>
+        <div class="brand-title">BITM CV Builder</div>
         <div class="brand-subtitle">Balaji Institute of Technology & Management • Sri Balaji University, Pune</div>
       </div>
     </div>
-
     <div class="header-actions">
-      <a href="#features" class="btn btn-secondary">Features</a>
-      <a href="#guidelines" class="btn btn-secondary">Guidelines</a>
-      <a href="#how-it-works" class="btn btn-secondary">How It Works</a>
       <a href="builder.html" class="btn btn-primary" style="background:#0e3860; border-color:#0e3860;">
-        🚀 Open CV Builder →
+        🚀 CV Builder
       </a>
     </div>
   </header>
 
-  <!-- Main Landing Container -->
-  <main class="home-container">
-
-    <!-- Hero Section -->
-    <section class="home-hero">
+  <!-- Focused Center Portal -->
+  <main class="simple-home-container">
+    <div class="simple-hero">
       <div class="home-badge">
-        <span>🏛️ Corporate Relations & Placement Cell • BITM Pune</span>
+        <span>🏛️ Official Placement Cell Format</span>
       </div>
-      
-      <h1>Standardized MBA Placement CV Builder</h1>
+      <h1>BITM MBA Placement CV Portal</h1>
       <p>
-        Design, refine, and export your official placement CV with 100% compliance to BITM guidelines.
-        Featuring instant side-by-side synchronization, placement-approved formatting, and zero-distortion A4 PDF export.
+        Create your official placement CV with live 2-page preview and Word (.docx) & PDF download, or automatically transform your unformatted CV into the official placement format.
       </p>
 
-      <div class="home-hero-actions">
-        <a href="builder.html" class="btn btn-primary btn-lg" style="background:#0e3860; border-color:#0e3860; box-shadow: 0 4px 12px rgba(14,56,96,0.3);">
-          🚀 Launch CV Builder →
-        </a>
-        <a href="#guidelines" class="btn btn-secondary btn-lg">
-          📘 View 15 Placement Rules
-        </a>
-        <a href="builder.html" class="btn btn-secondary btn-lg">
-          📄 View Verified Sample CV
-        </a>
+      <!-- The Two Main Action Cards -->
+      <div class="portal-cards-grid">
+        
+        <!-- Card 1: Open CV Builder -->
+        <div class="portal-action-card">
+          <div>
+            <div class="card-action-icon">🚀</div>
+            <h2>Interactive CV Builder</h2>
+            <p>
+              Build or edit your placement CV directly. Pre-filled with approved format, live side-by-side paper preview, Freshers mode (remove Summer Internship), and Word (.docx) & PDF export.
+            </p>
+          </div>
+          <a href="builder.html" class="btn btn-primary btn-lg" style="background:#0e3860; border-color:#0e3860; width: 100%; justify-content: center; text-align: center;">
+            Open CV Builder →
+          </a>
+        </div>
+
+        <!-- Card 2: Auto-Format Unformatted CV -->
+        <div class="portal-action-card highlight-card">
+          <div>
+            <div class="card-action-icon">⚡</div>
+            <h2>Convert Unformatted CV</h2>
+            <p>
+              Have an unformatted resume or raw text from Word, PDF, or LinkedIn? Paste it here and let our system automatically convert and format it into the official BITM layout!
+            </p>
+          </div>
+          <button type="button" class="btn btn-primary btn-lg" id="btnOpenConvertModal" style="background:#0284c7; border-color:#0284c7; width: 100%; justify-content: center; text-align: center;">
+            ⚡ Paste & Format Unformatted CV →
+          </button>
+        </div>
+
       </div>
-    </section>
-
-    <!-- Key Metrics / Stats -->
-    <section class="home-stats">
-      <div class="stat-card">
-        <div class="stat-num">100%</div>
-        <div class="stat-lbl">BITM Placement Format Compliance</div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-num">15 / 15</div>
-        <div class="stat-lbl">Mandatory Placement Rules Enforced</div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-num">0 mm</div>
-        <div class="stat-lbl">Zero-Distortion A4 Margin PDF Export</div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-num">Real-Time</div>
-        <div class="stat-lbl">Live Keystroke Synchronization</div>
-      </div>
-    </section>
-
-    <!-- Core Features Grid -->
-    <section id="features" style="padding-top: 1rem;">
-      <div class="section-header-center">
-        <h2>Built Specifically for BITM Students</h2>
-        <p>Eliminate formatting rejections and craft an executive corporate resume</p>
-      </div>
-
-      <div class="features-grid">
-        <div class="feature-box">
-          <div class="feature-icon">📑</div>
-          <h3>Official Placement Letterhead</h3>
-          <p>
-            Includes the authorized high-resolution BITM crest, SBUP 25th anniversary insignia, chancellor recognition, and placement cell coordinates directly on Page 1.
-          </p>
-        </div>
-
-        <div class="feature-box">
-          <div class="feature-icon">⚡</div>
-          <h3>Live Split-Screen Synchronization</h3>
-          <p>
-            Fill out intuitive form cards on the left and observe your official CV paper format instantly update on the right on every single keystroke.
-          </p>
-        </div>
-
-        <div class="feature-box">
-          <div class="feature-icon">📥</div>
-          <h3>Zero-Distortion A4 PDF Export</h3>
-          <p>
-            Export direct, crystal-clear A4 PDFs without printer margin bugs or unwanted line breaks. Includes both client-side direct download and native print support.
-          </p>
-        </div>
-
-        <div class="feature-box">
-          <div class="feature-icon">✨</div>
-          <h3>AI Resume Copilot</h3>
-          <p>
-            Powered by OpenRouter (<code>gpt-4o-mini</code>) to polish bullet points with high-impact corporate action verbs, quantify internship achievements, and apply the STAR method.
-          </p>
-        </div>
-
-        <div class="feature-box">
-          <div class="feature-icon">🔒</div>
-          <h3>Private Local Storage</h3>
-          <p>
-            Your details are stored safely in your own browser's local storage. Work on your draft anytime without server tracking or account login friction.
-          </p>
-        </div>
-
-        <div class="feature-box">
-          <div class="feature-icon">🎓</div>
-          <h3>Pre-Loaded Verified Sample</h3>
-          <p>
-            Comes pre-filled with the official benchmark sample from Bhushan Padghan's reference format, so you immediately understand what fields belong in each section.
-          </p>
-        </div>
-      </div>
-    </section>
-
-    <!-- How It Works Section -->
-    <section id="how-it-works" style="padding-top: 1rem; margin-bottom: 3.5rem;">
-      <div class="section-header-center">
-        <h2>How It Works in 3 Simple Steps</h2>
-        <p>From initial draft to approved placement document in minutes</p>
-      </div>
-
-      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.5rem;">
-        <div style="background:#fff; border:1px solid #e2e8f0; border-radius:12px; padding:1.5rem; text-align:center;">
-          <div style="width:40px; height:40px; background:#e0f2fe; color:#0284c7; border-radius:50%; font-weight:800; display:flex; align-items:center; justify-content:center; margin:0 auto 1rem; font-size:1.1rem;">1</div>
-          <h3 style="color:#0e3860; font-size:1.05rem; margin-bottom:0.5rem;">Fill Your Profile</h3>
-          <p style="color:#64748b; font-size:0.85rem; line-height:1.5;">
-            Input your personal info, academic scores, internship deliverables, and projects into the organized form cards.
-          </p>
-        </div>
-
-        <div style="background:#fff; border:1px solid #e2e8f0; border-radius:12px; padding:1.5rem; text-align:center;">
-          <div style="width:40px; height:40px; background:#e0f2fe; color:#0284c7; border-radius:50%; font-weight:800; display:flex; align-items:center; justify-content:center; margin:0 auto 1rem; font-size:1.1rem;">2</div>
-          <h3 style="color:#0e3860; font-size:1.05rem; margin-bottom:0.5rem;">Review Live Paper</h3>
-          <p style="color:#64748b; font-size:0.85rem; line-height:1.5;">
-            Review the 2-page preview paper side-by-side to verify alignments, right-aligned dates, checkmarks, and photo fit.
-          </p>
-        </div>
-
-        <div style="background:#fff; border:1px solid #e2e8f0; border-radius:12px; padding:1.5rem; text-align:center;">
-          <div style="width:40px; height:40px; background:#e0f2fe; color:#0284c7; border-radius:50%; font-weight:800; display:flex; align-items:center; justify-content:center; margin:0 auto 1rem; font-size:1.1rem;">3</div>
-          <h3 style="color:#0e3860; font-size:1.05rem; margin-bottom:0.5rem;">Download Official PDF</h3>
-          <p style="color:#64748b; font-size:0.85rem; line-height:1.5;">
-            Click <strong>Download PDF</strong> to get a print-ready A4 document matching the exact placement committee standards.
-          </p>
-        </div>
-      </div>
-    </section>
-
-    <!-- Placement Formatting Guidelines (15 Rules) -->
-    <section id="guidelines" class="guidelines-card">
-      <div class="section-header-center" style="margin-bottom: 1.5rem;">
-        <h2>📘 Official CV Formatting Instructions</h2>
-        <p>Corporate Relations & Placement Cell, Balaji Institute of Telecom & Management (BITM)</p>
-      </div>
-
-      <div class="rules-grid">
-        <div class="rule-item">
-          <div class="rule-num">1</div>
-          <div class="rule-content">
-            <strong>Candidate Name</strong>
-            <span>14 pt, bold, and properly aligned as per the given format.</span>
-          </div>
-        </div>
-
-        <div class="rule-item">
-          <div class="rule-num">2</div>
-          <div class="rule-content">
-            <strong>Uniform Typography</strong>
-            <span>Use Arial font throughout the CV without exception.</span>
-          </div>
-        </div>
-
-        <div class="rule-item">
-          <div class="rule-num">3</div>
-          <div class="rule-content">
-            <strong>Standard Font Size</strong>
-            <span>Keep the overall CV body content strictly at 11 pt.</span>
-          </div>
-        </div>
-
-        <div class="rule-item">
-          <div class="rule-num">4</div>
-          <div class="rule-content">
-            <strong>Heading Bolding</strong>
-            <span>Only headings are bold. Keep details and content in normal font.</span>
-          </div>
-        </div>
-
-        <div class="rule-item">
-          <div class="rule-num">5</div>
-          <div class="rule-content">
-            <strong>Alignment & Checkmarks</strong>
-            <span>Follow table alignment. Keep tick marks (✓) center-aligned.</span>
-          </div>
-        </div>
-
-        <div class="rule-item">
-          <div class="rule-num">6</div>
-          <div class="rule-content">
-            <strong>Balanced Margins</strong>
-            <span>Maintain balanced margins on all four sides of each page.</span>
-          </div>
-        </div>
-
-        <div class="rule-item">
-          <div class="rule-num">7</div>
-          <div class="rule-content">
-            <strong>Section Spacing</strong>
-            <span>Maintain equal space after every section; avoid blank lines.</span>
-          </div>
-        </div>
-
-        <div class="rule-item">
-          <div class="rule-num">8</div>
-          <div class="rule-content">
-            <strong>Specialisation Format</strong>
-            <span>Write your specialization as per format; use official short forms if needed.</span>
-          </div>
-        </div>
-
-        <div class="rule-item">
-          <div class="rule-num">9</div>
-          <div class="rule-content">
-            <strong>Dates on Right Side</strong>
-            <span>Mention internship and certification dates right-aligned consistently.</span>
-          </div>
-        </div>
-
-        <div class="rule-item">
-          <div class="rule-num">10</div>
-          <div class="rule-content">
-            <strong>Passing Year Standard</strong>
-            <span>Passing year: 2023 ✅ | 2022–23 ❌. For MBA, write 2026–28 & "Pursuing".</span>
-          </div>
-        </div>
-
-        <div class="rule-item">
-          <div class="rule-num">11</div>
-          <div class="rule-content">
-            <strong>Marks Representation</strong>
-            <span>Mention marks only in Percentage or CGPA. No other format.</span>
-          </div>
-        </div>
-
-        <div class="rule-item">
-          <div class="rule-num">12</div>
-          <div class="rule-content">
-            <strong>Formal Photograph</strong>
-            <span>Use a formal passport-size photograph with a clean white background.</span>
-          </div>
-        </div>
-
-        <div class="rule-item">
-          <div class="rule-num">13</div>
-          <div class="rule-content">
-            <strong>Content Order</strong>
-            <span>Fill updated details. Do not alter section sequence or add extra sections.</span>
-          </div>
-        </div>
-
-        <div class="rule-item">
-          <div class="rule-num">14</div>
-          <div class="rule-content">
-            <strong>Structural Integrity</strong>
-            <span>Do not alter the overall structure, table borders, or header banners.</span>
-          </div>
-        </div>
-
-        <div class="rule-item">
-          <div class="rule-num">15</div>
-          <div class="rule-content">
-            <strong>Final Verification Check</strong>
-            <span>Review spelling, contact numbers, dates, and director signatures before submit.</span>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <!-- Bottom Call-To-Action Banner -->
-    <section style="background: linear-gradient(135deg, #0e3860, #0284c7); border-radius: 16px; padding: 3rem 2rem; text-align: center; color: #fff; margin-bottom: 2rem;">
-      <h2 style="font-size: 2rem; font-weight: 800; margin-bottom: 0.75rem;">Ready to Build Your Approved Placement CV?</h2>
-      <p style="font-size: 1rem; color: #e0f2fe; max-width: 600px; margin: 0 auto 1.75rem;">
-        Open the builder, review your profile with the live paper preview, and download your zero-distortion A4 PDF.
-      </p>
-      <a href="builder.html" class="btn btn-primary btn-lg" style="background: #ffffff; color: #0e3860; font-weight: 800; border: none; box-shadow: 0 4px 14px rgba(0,0,0,0.25);">
-        🚀 Launch CV Builder Now →
-      </a>
-    </section>
-
+    </div>
   </main>
 
-  <!-- Footer -->
-  <footer class="home-footer">
-    <div class="footer-content">
-      <div class="footer-col">
-        <h4 style="display: flex; align-items: center; gap: 0.5rem;">
-          <span>🎓</span> BITM Corporate Relations & Placement System (CPS)
-        </h4>
-        <p>
-          Balaji Institute of Technology & Management (BITM)<br>
-          Constituent of Sri Balaji University, Pune (SBUP)<br>
-          55/2-7 Tathawade, Off Mumbai-Bangalore Bypass, Pune - 411033.
-        </p>
+  <!-- Modal: Paste Unformatted CV -->
+  <div class="modal-overlay" id="convertModal">
+    <div class="modal-content" style="max-width: 680px;">
+      <div class="modal-header">
+        <h3>⚡ Auto-Format Unformatted CV into Official Format</h3>
+        <button type="button" class="btn-danger" style="color:#fff; font-size:1.25rem; background:transparent; border:none; cursor:pointer;" onclick="closeConvertModal()">✕</button>
       </div>
-
-      <div class="footer-col">
-        <h4>Placement Contacts</h4>
-        <p>
-          Telephone: +91-20-66741110 / 1244<br>
-          Email: <a href="mailto:placements@bitmpune.edu.in">placements@bitmpune.edu.in</a><br>
-          Website: <a href="https://bitmpune.edu.in" target="_blank">bitmpune.edu.in</a>
+      <div class="modal-body">
+        <p style="font-size:0.85rem; color:#475569; margin-bottom:0.75rem;">
+          Paste your raw / unformatted resume text below. Our converter will automatically extract your contact details, education, internship, projects, and activities into the official BITM template.
         </p>
+
+        <textarea id="rawCvInput" rows="11" style="width:100%; border:1px solid #cbd5e1; border-radius:8px; padding:0.75rem; font-family:inherit; font-size:0.85rem; resize:vertical;" placeholder="Paste your unformatted CV or resume text here...
+
+Example:
+Rahul Sharma
+MBA in Marketing & HR, Phone: 9876543210, Email: rahul@example.com
+Education: MBA Pursuing 2026-28 from BITM Pune, BBA from Pune University 2024
+Summer Internship at ABC Corp as Marketing Intern...
+Projects: Market research on consumer behavior..."></textarea>
+
+        <div id="convertStatus" style="display:none; margin-top:0.75rem; padding:0.75rem; border-radius:6px; font-size:0.82rem;"></div>
       </div>
-
-      <div class="footer-col">
-        <h4>Quick Navigation</h4>
-        <p>
-          <a href="builder.html">Open CV Builder</a><br>
-          <a href="#guidelines">Formatting Instructions</a><br>
-          <a href="#features">Key Features</a><br>
-          <a href="https://sbup.edu.in" target="_blank">Sri Balaji University</a>
-        </p>
+      <div class="modal-footer" style="gap:0.5rem;">
+        <button type="button" class="btn btn-secondary" onclick="closeConvertModal()">Cancel</button>
+        <button type="button" class="btn btn-primary" id="btnStartConvert" style="background:#0e3860; border-color:#0e3860;">
+          ⚡ Transform & Open Formatted CV
+        </button>
       </div>
     </div>
+  </div>
 
-    <div class="footer-bottom">
-      © 2026 Balaji Institute of Technology & Management (BITM), Sri Balaji University, Pune. All rights reserved.
-    </div>
+  <!-- Minimal Footer -->
+  <footer class="simple-footer">
+    © 2026 Balaji Institute of Technology & Management (BITM), Sri Balaji University Pune. Corporate Relations & Placement Cell.
   </footer>
 
+  <script src="converter.js"></script>
 </body>
 </html>
